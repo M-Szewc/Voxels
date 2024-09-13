@@ -1,6 +1,7 @@
-#include "vopch.h"
 #pragma once
 
+#include "vopch.h"
+#include <GLFW/glfw3.h>
 
 namespace Game {
 
@@ -8,6 +9,13 @@ namespace Game {
 	{
 	public:
 		Engine();
+		~Engine();
+	private:
+		int m_width, m_height;
+
+		GLFWwindow* window;
+	private:
+		void InitializeWindow();
 	};
 
 }

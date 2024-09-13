@@ -20,7 +20,13 @@ project "Voxels"
 	includedirs
 	{
 		".",
-		"src"
+		"src",
+		"%{IncludeDir.GLFW}"
+	}
+
+	links
+	{
+		"GLFW"
 	}
 
 	filter "system:windows"
