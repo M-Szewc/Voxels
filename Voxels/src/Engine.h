@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vopch.h"
-#include <GLFW/glfw3.h>
 
 namespace Game {
 
@@ -11,11 +10,18 @@ namespace Game {
 		Engine();
 		~Engine();
 	private:
-		int m_width, m_height;
+		int m_width{ 640 };
+		int m_height{ 480 };
 
-		GLFWwindow* window;
+		const char* m_applicationName = "Voxel application";
+
+		GLFWwindow* window{ nullptr };
+
+		vk::Instance m_instance{ nullptr };
+
 	private:
 		void InitializeWindow();
+		void CreateVulkanInstance();
 	};
 
 }

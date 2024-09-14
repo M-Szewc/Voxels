@@ -10,3 +10,6 @@ bin-int/
 **.vcxproj.filters
 **.vcxproj.user
 **.csproj
+
+# temporary vulkan
+Voxels/vendor/VulkanSDK/

@@ -11,8 +11,7 @@ project "Voxels"
 
 	files
 	{
-		
-
+		"vopch.h",
 		"src/**.h",
 		"src/**.cpp"
 	}
@@ -21,13 +20,22 @@ project "Voxels"
 	{
 		".",
 		"src",
-		"%{IncludeDir.GLFW}"
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Vulkan}"
+	}
+
+	libdirs
+	{
+		"vendor/VulkanSDK/Lib"
 	}
 
 	links
 	{
-		"GLFW"
+		"GLFW",
+		"vulkan-1"
 	}
+
+	defines "GLFW_INCLUDE_VULKAN"
 
 	filter "system:windows"
 		systemversion "latest"
