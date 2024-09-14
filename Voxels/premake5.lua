@@ -21,7 +21,8 @@ project "Voxels"
 		".",
 		"src",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.Vulkan}"
+		"%{IncludeDir.Vulkan}",
+		"%{IncludeDir.spdlog}"
 	}
 
 	libdirs
@@ -39,6 +40,7 @@ project "Voxels"
 
 	filter "system:windows"
 		systemversion "latest"
+		defines "VO_PLATFORM_WINDOWS"
 
 	filter "configurations:Debug"
 		defines "VO_DEBUG"

@@ -3,19 +3,89 @@
 #include <vopch.h>
 
 namespace vkInit {
+
+
+	// checks if the extensions are supported
+	bool AreSupported(const std::vector<const char*>& extensions, const std::vector<const char*>& layers) {
+	
+		//check extension support
+		std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
+
+#ifdef VO_DEBUG
+		std::stringstream ss;
+		ss << "Device can support the following extensions:" << std::endl;
+
+		for (vk::ExtensionProperties supportedExtension : supportedExtensions) {
+			ss << '\t' << supportedExtension.extensionName << std::endl;
+		}
+
+		VO_CORE_TRACE(ss.str());
+#endif
+		bool found = false;
+		for (const char* extension : extensions) {
+			for (vk::ExtensionProperties supportedExtension : supportedExtensions) {
+				if (strcmp(extension, supportedExtension.extensionName) == 0) {
+					found = true;
+#ifdef VO_DEBUG
+					VO_CORE_INFO("Extension \"{0}\" is supported", extension);
+#endif
+				}
+			}
+			if(!found) {
+#ifdef VO_DEBUG
+				VO_CORE_ERROR("Extension \"{0}\" is not supported!", extension);
+#endif
+				return false;
+			}
+		}
+
+
+		//check layer support
+		std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
+
+#ifdef VO_DEBUG
+		ss.str("");
+		ss << "Device can support the following layers:" << std::endl;
+		for (vk::LayerProperties supportedLayer : supportedLayers) {
+			ss << '\t' << supportedLayer.layerName << std::endl;
+		}
+		VO_CORE_TRACE(ss.str());
+#endif
+
+		for (const char* layer : layers) {
+			found = false;
+			for (vk::LayerProperties supportedLayer : supportedLayers) {
+				if (strcmp(layer, supportedLayer.layerName) == 0) {
+					found = true;
+#ifdef VO_DEBUG
+					VO_CORE_INFO("Layer \"{0}\" is supported", layer);
+#endif
+				}
+			}
+			if (!found) {
+#ifdef VO_DEBUG
+				VO_CORE_ERROR("Layer \"{0}\" is not supported!", layer);
+#endif
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	vk::Instance MakeInstance(const char* applicationName) {
 #ifdef VO_DEBUG
-		std::cout << "Creating Vulkan instance" << std::endl;
+		VO_CORE_INFO("Creating Vulkan instance");
 #endif
 		uint32_t version{ 0 };
 		vkEnumerateInstanceVersion(&version);
 
 #ifdef VO_DEBUG
-		std::cout << "System supports Vulkan variant: "
-			<< VK_API_VERSION_VARIANT(version)
-			<< ", Major: " << VK_API_VERSION_MAJOR(version)
-			<< ", Minor: " << VK_API_VERSION_MINOR(version)
-			<< ", Patch: " << VK_API_VERSION_PATCH(version) << std::endl;
+		VO_CORE_TRACE("System supports Vulkan variant: {0}, Major: {1}, Minor: {2}, Patch: {3}",
+			VK_API_VERSION_VARIANT(version),
+			VK_API_VERSION_MAJOR(version),
+			VK_API_VERSION_MINOR(version),
+			VK_API_VERSION_PATCH(version));
 #endif
 		// ignoring Patch - using patch 0 for compatibility
 		version &= ~(0xFFFU);
@@ -37,19 +107,38 @@ namespace vkInit {
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 #ifdef VO_DEBUG
-		std::cout << "extensions to be requested:" << std::endl;
+		extensions.push_back("VK_EXT_debug_utils");
+#endif
+
+
+#ifdef VO_DEBUG
+		std::stringstream ss;
+		ss << "extensions to be requested:" << std::endl;
 
 		for (const char* extensionName : extensions) {
-			std::cout << "\t\"" << extensionName << "\"" << std::endl;
+			ss << "\t\"" << extensionName << "\"" << std::endl;
 		}
+
+		VO_CORE_TRACE(ss.str());
 #endif
+
+		std::vector<const char*> layers;
+#ifdef VO_DEBUG
+		layers.push_back("VK_LAYER_KHRONOS_validation");
+#endif
+
+
+		if (!AreSupported(extensions, layers)) {
+			return nullptr;
+		}
+
 
 		// creating creation info and passing extensions
 
 		vk::InstanceCreateInfo createInfo = vk::InstanceCreateInfo(
 			vk::InstanceCreateFlags(),
 			&appInfo,
-			0, nullptr, // enabled layers
+			static_cast<uint32_t>(layers.size()), layers.data(), // enabled layers
 			static_cast<uint32_t>(extensions.size()), extensions.data() // enabled extensions
 		);
 

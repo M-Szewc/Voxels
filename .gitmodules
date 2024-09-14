@@ -1,3 +1,6 @@
 [submodule "Voxels/vendor/GLFW"]
 	path = Voxels/vendor/GLFW
 	url = https://github.com/M-Szewc/glfw
+[submodule "Voxels/vendor/spdlog"]
+	path = Voxels/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
