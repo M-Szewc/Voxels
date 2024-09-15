@@ -19,16 +19,18 @@ namespace Game {
 
 		//vulkan instance
 		vk::Instance m_Instance{ nullptr };
-
-		//debug vulkan callback
 		vk::DebugUtilsMessengerEXT m_DebugMessanger{ nullptr };
-		//dynamic instance dispatcher
 		vk::DispatchLoaderDynamic m_DispatchLoaderDY;
+
+		//devices
+		vk::PhysicalDevice m_PhysicalDevice{ nullptr };
+		vk::Device m_Device{ nullptr };
+		vk::Queue m_GraphicsQueue{ nullptr };
 
 	private:
 		void InitializeWindow();
 		void CreateVulkanInstance();
-		void CreateDebugMessanger();
+		void SetupDevice();
 	};
 
 }

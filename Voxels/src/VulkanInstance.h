@@ -75,13 +75,13 @@ namespace vkInit {
 
 	vk::Instance MakeInstance(const char* applicationName) {
 #ifdef VO_DEBUG
-		VO_CORE_INFO("Creating Vulkan instance");
+		VO_CORE_TRACE("Creating Vulkan instance");
 #endif
 		uint32_t version{ 0 };
 		vkEnumerateInstanceVersion(&version);
 
 #ifdef VO_DEBUG
-		VO_CORE_TRACE("System supports Vulkan variant: {0}, Major: {1}, Minor: {2}, Patch: {3}",
+		VO_CORE_INFO("System supports Vulkan variant: {0}, Major: {1}, Minor: {2}, Patch: {3}",
 			VK_API_VERSION_VARIANT(version),
 			VK_API_VERSION_MAJOR(version),
 			VK_API_VERSION_MINOR(version),
@@ -149,7 +149,7 @@ namespace vkInit {
 		}
 		catch (vk::SystemError err) {
 #ifdef VO_DEBUG
-			std::cout << "Failed to create Vulkan instance" << std::endl;
+			VO_CORE_ERROR("Failed to create Vulkan instance");
 #endif
 			return nullptr;
 		}

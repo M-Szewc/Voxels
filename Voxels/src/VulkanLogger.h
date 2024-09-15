@@ -9,7 +9,21 @@ namespace vkInit {
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData
 	) {
-		VO_VULKAN_ERROR(pCallbackData->pMessage);
+		if (messageSeverity > VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+			VO_VULKAN_FATAL(pCallbackData->pMessage);
+		}
+		else if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+			VO_VULKAN_ERROR(pCallbackData->pMessage);
+		}
+		else if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+			VO_VULKAN_WARN(pCallbackData->pMessage);
+		}
+		else if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+			VO_VULKAN_INFO(pCallbackData->pMessage);
+		}
+		else {
+			VO_VULKAN_TRACE(pCallbackData->pMessage);
+		}
 
 		return VK_FALSE;
 	}
@@ -20,7 +34,7 @@ namespace vkInit {
 
 		vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
 			vk::DebugUtilsMessengerCreateFlagsEXT(),
-			vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+			vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
 			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
 			debugCallback,
 			nullptr

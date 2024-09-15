@@ -5,6 +5,9 @@
 // statically load library - doesn't have all functions
 #include <vulkan/vulkan.hpp>
 
-#include <iostream>
+#include <vector>
+#include <set>
+#include <string>
+#include <optional>
 
 #include <Log.h>
