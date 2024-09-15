@@ -21,11 +21,13 @@ namespace Game {
 		vk::Instance m_Instance{ nullptr };
 		vk::DebugUtilsMessengerEXT m_DebugMessanger{ nullptr };
 		vk::DispatchLoaderDynamic m_DispatchLoaderDY;
+		vk::SurfaceKHR m_Surface;
 
 		//devices
 		vk::PhysicalDevice m_PhysicalDevice{ nullptr };
 		vk::Device m_Device{ nullptr };
 		vk::Queue m_GraphicsQueue{ nullptr };
+		vk::Queue m_PresentQueue{ nullptr };
 
 	private:
 		void InitializeWindow();

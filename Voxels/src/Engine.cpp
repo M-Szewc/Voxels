@@ -33,6 +33,7 @@ namespace Game {
 		m_Device.destroy();
 
 
+		m_Instance.destroySurfaceKHR(m_Surface);
 #ifdef VO_DEBUG
 		//destroy debug messanger
 		m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessanger, nullptr, m_DispatchLoaderDY);
@@ -79,11 +80,27 @@ namespace Game {
 		m_DebugMessanger = vkInit::CreateDebugMessanger(m_Instance, m_DispatchLoaderDY);
 #endif
 
+		VkSurfaceKHR c_style_surface;
+		if (glfwCreateWindowSurface(m_Instance, m_Window, nullptr, &c_style_surface) != VK_SUCCESS) {
+#ifdef VO_DEBUG
+			VO_CORE_ERROR("Failed to abstract the glfw surface for Vulkan");
+#endif
+		}
+		else {
+#ifdef VO_DEBUG
+			VO_CORE_TRACE("Successfully abstracted the glfw surface for Vulkan");
+#endif
+		}
+		m_Surface = c_style_surface;
+		
 	}
+
 	void Engine::SetupDevice()
 	{
 		m_PhysicalDevice = vkInit::GetPhysicalDevice(m_Instance);
-		m_Device = vkInit::CreateLogicalDevice(m_PhysicalDevice);
-		m_GraphicsQueue = vkInit::GetQueue(m_PhysicalDevice, m_Device);
+		m_Device = vkInit::CreateLogicalDevice(m_PhysicalDevice, m_Surface);
+		std::array<vk::Queue, 2> queues = vkInit::GetQueue(m_PhysicalDevice, m_Device, m_Surface);
+		m_GraphicsQueue = queues[0];
+		m_PresentQueue = queues[1];
 	}
 }
