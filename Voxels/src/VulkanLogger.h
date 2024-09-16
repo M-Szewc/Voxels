@@ -28,6 +28,7 @@ namespace vkInit {
 		return VK_FALSE;
 	}
 
+
 	vk::DebugUtilsMessengerEXT CreateDebugMessanger(vk::Instance& instance, vk::DispatchLoaderDynamic& dldi) {
 		
 		// make create info

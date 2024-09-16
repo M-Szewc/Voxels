@@ -10,4 +10,5 @@
 #include <string>
 #include <optional>
 
+#include <Core.h>
 #include <Log.h>

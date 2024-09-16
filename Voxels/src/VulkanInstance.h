@@ -4,8 +4,7 @@
 
 namespace vkInit {
 
-
-	// checks if the extensions are supported
+	// checks if the extensions and layers are supported
 	bool AreSupported(const std::vector<const char*>& extensions, const std::vector<const char*>& layers) {
 	
 		//check extension support
@@ -21,6 +20,8 @@ namespace vkInit {
 
 		VO_CORE_TRACE(ss.str());
 #endif
+
+		// quadratic search for supported extensions
 		bool found = false;
 		for (const char* extension : extensions) {
 			for (vk::ExtensionProperties supportedExtension : supportedExtensions) {
@@ -39,7 +40,6 @@ namespace vkInit {
 			}
 		}
 
-
 		//check layer support
 		std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
@@ -52,6 +52,7 @@ namespace vkInit {
 		VO_CORE_TRACE(ss.str());
 #endif
 
+		// quadratic search for supported layers
 		for (const char* layer : layers) {
 			found = false;
 			for (vk::LayerProperties supportedLayer : supportedLayers) {
@@ -73,10 +74,14 @@ namespace vkInit {
 		return true;
 	}
 
+	// create Vulkan instance
 	vk::Instance MakeInstance(const char* applicationName) {
+
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Creating Vulkan instance");
 #endif
+
+		// get Vulkan version
 		uint32_t version{ 0 };
 		vkEnumerateInstanceVersion(&version);
 
@@ -87,9 +92,11 @@ namespace vkInit {
 			VK_API_VERSION_MINOR(version),
 			VK_API_VERSION_PATCH(version));
 #endif
+
 		// ignoring Patch - using patch 0 for compatibility
 		version &= ~(0xFFFU);
 
+		// create application info
 		vk::ApplicationInfo appInfo = vk::ApplicationInfo(
 			applicationName,
 			version,
@@ -99,7 +106,6 @@ namespace vkInit {
 		);
 
 		// checking for glfw extensions
-
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -109,7 +115,6 @@ namespace vkInit {
 #ifdef VO_DEBUG
 		extensions.push_back("VK_EXT_debug_utils");
 #endif
-
 
 #ifdef VO_DEBUG
 		std::stringstream ss;
@@ -123,18 +128,17 @@ namespace vkInit {
 #endif
 
 		std::vector<const char*> layers;
+
+		// add validation layer for debug
 #ifdef VO_DEBUG
 		layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
-
 
 		if (!AreSupported(extensions, layers)) {
 			return nullptr;
 		}
 
-
 		// creating creation info and passing extensions
-
 		vk::InstanceCreateInfo createInfo = vk::InstanceCreateInfo(
 			vk::InstanceCreateFlags(),
 			&appInfo,
@@ -142,8 +146,7 @@ namespace vkInit {
 			static_cast<uint32_t>(extensions.size()), extensions.data() // enabled extensions
 		);
 
-		// create instance using creation info
-
+		// try to create instance using creation info
 		try {
 			return vk::createInstance(createInfo, nullptr);
 		}

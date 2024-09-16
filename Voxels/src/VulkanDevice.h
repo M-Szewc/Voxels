@@ -12,7 +12,7 @@ namespace vkInit {
 		}
 	};
 
-
+	// logs device properties
 	void LogDeviceProperties(const vk::PhysicalDevice& device) {
 
 		vk::PhysicalDeviceProperties properties = device.getProperties();
@@ -42,6 +42,7 @@ namespace vkInit {
 		VO_CORE_INFO(ss.str());
 	}
 
+	// checks if device supports all requested extensions
 	bool CheckDeviceExtensionSupport(
 		const vk::PhysicalDevice& device,
 		const std::vector<const char*>& requestedExtensions
@@ -67,6 +68,7 @@ namespace vkInit {
 		return requiredExtensions.empty();
 	}
 
+	// checks if device supports extensions
 	bool IsSuitable(const vk::PhysicalDevice& device) {
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Checking if device is suitable");
@@ -91,17 +93,19 @@ namespace vkInit {
 #ifdef VO_DEBUG
 			VO_CORE_INFO("Device can support the requested extensions");
 #endif
+
 		}
 		else {
 #ifdef VO_DEBUG
 			VO_CORE_ERROR("Device cannot support the requested extensions!");
 #endif
+
 			return false;
 		}
-
 		return true;
 	}
 
+	// returns suitable aveilable physical device
 	vk::PhysicalDevice GetPhysicalDevice(vk::Instance& instance) {
 
 #ifdef VO_DEBUG
@@ -119,6 +123,7 @@ namespace vkInit {
 #ifdef VO_DEBUG
 			LogDeviceProperties(device);
 #endif
+
 			if (IsSuitable(device)) {
 				return device;
 			}
@@ -127,6 +132,7 @@ namespace vkInit {
 		return nullptr;
 	}
 
+	// returns queue family indices
 	QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface) {
 		QueueFamilyIndices indices;
 
@@ -164,6 +170,7 @@ namespace vkInit {
 		return indices;
 	}
 
+	// creates device - abstracted device from physical device and queue families
 	vk::Device CreateLogicalDevice(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface) {
 
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface);
@@ -208,16 +215,19 @@ namespace vkInit {
 #ifdef VO_DEBUG
 			VO_CORE_INFO("GPU has been successfully abstracted");
 #endif
+
 			return device;
 		}
 		catch (vk::SystemError err) {
 #ifdef VO_DEBUG
 			VO_CORE_ERROR("Failed to abstract GPU!");
 #endif
+
 			return nullptr;
 		}
 	}
 
+	// returns queue indecies 0 - graphics 1 - presenting
 	std::array<vk::Queue, 2> GetQueue(vk::PhysicalDevice physicalDevice, vk::Device device, vk::SurfaceKHR surface) {
 		
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface);
