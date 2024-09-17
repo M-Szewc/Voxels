@@ -14,10 +14,12 @@ namespace Game {
 
 		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 		inline static std::shared_ptr<spdlog::logger>& GetVulkanLogger() { return s_VulkanLogger; }
+		inline static std::shared_ptr<spdlog::logger>& GetGameLogger() { return s_GameLogger; }
 
 	private:
 		static std::shared_ptr<spdlog::logger> s_CoreLogger;
 		static std::shared_ptr<spdlog::logger> s_VulkanLogger;
+		static std::shared_ptr<spdlog::logger> s_GameLogger;
 	};
 
 }
@@ -31,12 +33,19 @@ namespace Game {
 
 // vulkan log macros
 #define VO_VULKAN_ERROR(...)	Game::Log::GetVulkanLogger()->error(__VA_ARGS__)
-#define VO_VULKAN_WARN(...)	Game::Log::GetVulkanLogger()->warn(__VA_ARGS__)
-#define VO_VULKAN_INFO(...)	Game::Log::GetVulkanLogger()->info(__VA_ARGS__)
+#define VO_VULKAN_WARN(...)		Game::Log::GetVulkanLogger()->warn(__VA_ARGS__)
+#define VO_VULKAN_INFO(...)		Game::Log::GetVulkanLogger()->info(__VA_ARGS__)
 #define VO_VULKAN_TRACE(...)	Game::Log::GetVulkanLogger()->trace(__VA_ARGS__)
 #define VO_VULKAN_FATAL(...)	Game::Log::GetVulkanLogger()->critical(__VA_ARGS__)
 
-// clear engine logs in distriution
+// game log macros
+#define VO_ERROR(...)	Game::Log::GetGameLogger()->error(__VA_ARGS__)
+#define VO_WARN(...)	Game::Log::GetGameLogger()->warn(__VA_ARGS__)
+#define VO_INFO(...)	Game::Log::GetGameLogger()->info(__VA_ARGS__)
+#define VO_TRACE(...)	Game::Log::GetGameLogger()->trace(__VA_ARGS__)
+#define VO_FATAL(...)	Game::Log::GetGameLogger()->critical(__VA_ARGS__)
+
+// clear engine and vulkan logs in distriution
 #ifdef VO_DISTRIBUTION
 #define VO_CORE_ERROR
 #define VO_CORE_WARN

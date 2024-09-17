@@ -12,6 +12,8 @@ namespace Game {
 		// initialize loggers
 		Log::Init();
 
+		VO_CORE_FATAL("hello");
+
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Initialized engine logger");
 		VO_CORE_TRACE("Creating a graphics engine");

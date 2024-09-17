@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 #include <optional>
+#include <fstream>
 
 #include <Core.h>
 #include <Log.h>
