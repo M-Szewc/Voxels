@@ -23,11 +23,15 @@ namespace Game {
 		vk::DispatchLoaderDynamic m_DispatchLoaderDY;
 		vk::SurfaceKHR m_Surface;
 
-		//devices
+		//device-related
 		vk::PhysicalDevice m_PhysicalDevice{ nullptr };
 		vk::Device m_Device{ nullptr };
 		vk::Queue m_GraphicsQueue{ nullptr };
 		vk::Queue m_PresentQueue{ nullptr };
+		vk::SwapchainKHR m_Swapchain;
+		std::vector<vk::Image> m_SwapchainImages;
+		vk::Format m_SwapchainFormat;
+		vk::Extent2D m_SwapchainExtent;
 
 	private:
 		void InitializeWindow();

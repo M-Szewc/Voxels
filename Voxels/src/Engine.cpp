@@ -32,6 +32,7 @@ namespace Game {
 #endif
 
 		//destroy device
+		m_Device.destroySwapchainKHR(m_Swapchain);
 		m_Device.destroy();
 		//destroy surface
 		m_Instance.destroySurfaceKHR(m_Surface);
@@ -107,5 +108,12 @@ namespace Game {
 		std::array<vk::Queue, 2> queues = vkInit::GetQueue(m_PhysicalDevice, m_Device, m_Surface);
 		m_GraphicsQueue = queues[0];
 		m_PresentQueue = queues[1];
+
+		// create swapchain
+		vkInit::SwapChainBundle bundle = vkInit::CreateSwapchain(m_Device, m_PhysicalDevice, m_Surface, m_Width, m_Height);
+		m_Swapchain = bundle.Swapchain;
+		m_SwapchainImages = bundle.Images;
+		m_SwapchainFormat = bundle.Format;
+		m_SwapchainExtent = bundle.Extent;
 	}
 }
