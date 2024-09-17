@@ -44,6 +44,36 @@ namespace vkInit {
 		return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
 	}
 
+	// logs device properties
+	void LogDeviceProperties(const vk::PhysicalDevice& device) {
+
+		vk::PhysicalDeviceProperties properties = device.getProperties();
+
+		std::stringstream ss;
+
+		ss << "DeviceName: " << properties.deviceName << std::endl;
+
+		switch (properties.deviceType) {
+		case(vk::PhysicalDeviceType::eCpu):
+			ss << "CPU" << std::endl;
+			break;
+		case(vk::PhysicalDeviceType::eDiscreteGpu):
+			ss << "Discrete GPU" << std::endl;
+			break;
+		case(vk::PhysicalDeviceType::eIntegratedGpu):
+			ss << "Integrated GPU" << std::endl;
+			break;
+		case(vk::PhysicalDeviceType::eVirtualGpu):
+			ss << "Virtual GPU" << std::endl;
+			break;
+
+		default:
+			ss << "Other" << std::endl;
+		}
+
+		VO_CORE_INFO(ss.str());
+	}
+
 	std::vector<std::string> TransformBitsToString(vk::SurfaceTransformFlagsKHR bits) {
 		std::vector<std::string> result;
 
@@ -149,4 +179,6 @@ suitable for use as a fragment shading rate attachment or shading rate image");
 	std::string PresentModeInfo(vk::PresentModeKHR presentMode) {
 		return vk::to_string(presentMode);
 	}
+
+
 }

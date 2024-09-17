@@ -5,6 +5,7 @@
 #include "VulkanInstance.h"
 #include "VulkanLogger.h"
 #include "VulkanDevice.h"
+#include "Swapchain.h"
 
 namespace Game {
 	Engine::Engine() {
@@ -30,6 +31,11 @@ namespace Game {
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Destroying graphics engine");
 #endif
+
+		//destroy image views
+		for (vkUtil::SwapChainFrame frame : m_SwapchainFrames) {
+			m_Device.destroyImageView(frame.ImageView);
+		}
 
 		//destroy device
 		m_Device.destroySwapchainKHR(m_Swapchain);
@@ -112,7 +118,7 @@ namespace Game {
 		// create swapchain
 		vkInit::SwapChainBundle bundle = vkInit::CreateSwapchain(m_Device, m_PhysicalDevice, m_Surface, m_Width, m_Height);
 		m_Swapchain = bundle.Swapchain;
-		m_SwapchainImages = bundle.Images;
+		m_SwapchainFrames = bundle.Frames;
 		m_SwapchainFormat = bundle.Format;
 		m_SwapchainExtent = bundle.Extent;
 	}

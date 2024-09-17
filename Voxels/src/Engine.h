@@ -2,6 +2,8 @@
 
 #include "vopch.h"
 
+#include "VulkanUtil.h"
+
 namespace Game {
 
 	class Engine
@@ -29,7 +31,7 @@ namespace Game {
 		vk::Queue m_GraphicsQueue{ nullptr };
 		vk::Queue m_PresentQueue{ nullptr };
 		vk::SwapchainKHR m_Swapchain;
-		std::vector<vk::Image> m_SwapchainImages;
+		std::vector<vkUtil::SwapChainFrame> m_SwapchainFrames;
 		vk::Format m_SwapchainFormat;
 		vk::Extent2D m_SwapchainExtent;
 
