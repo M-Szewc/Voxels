@@ -1,12 +1,14 @@
 #include "vopch.h"
-#include "Engine.h"
+#include "App.h"
+
 
 // only windows
 #ifdef VO_PLATFORM_WINDOWS
 
 int main() {
 
-	Game::Engine graphicsEngine = Game::Engine();
+	Game::App app(640, 480);
+	app.Run();
 	return 0;
 
 }

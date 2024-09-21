@@ -9,11 +9,14 @@ namespace Game {
 	class Engine
 	{
 	public:
-		Engine();
+		Engine(int width, int height, GLFWwindow* window);
 		~Engine();
+
+		void Render();
+
 	private:
-		int m_Width{ 640 };
-		int m_Height{ 480 };
+		int m_Width;
+		int m_Height;
 
 		const char* m_ApplicationName = "Voxel application";
 
@@ -35,10 +38,26 @@ namespace Game {
 		vk::Format m_SwapchainFormat;
 		vk::Extent2D m_SwapchainExtent;
 
+		//pipeline-related
+		vk::PipelineLayout m_Layout;
+		vk::RenderPass m_RenderPass;
+		vk::Pipeline m_Pipeline;
+
+		//command-related
+		vk::CommandPool m_CommandPool;
+		vk::CommandBuffer m_MainCommandBuffer;
+
+		//synchronization-related
+		vk::Fence m_InFlightFence;
+		vk::Semaphore m_ImageAveilable, m_RenderFinished;
+
 	private:
-		void InitializeWindow();
 		void CreateVulkanInstance();
 		void SetupDevice();
+		void SetupPipeline();
+		void FinalizeSetup();
+
+		void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
 	};
 
 }

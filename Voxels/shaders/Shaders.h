@@ -22,4 +22,23 @@ namespace vkUtil {
 		file.close();
 		return buffer;
 	}
+
+	vk::ShaderModule CreateModule(std::string filename, vk::Device device) {
+
+		std::vector<char> sourceCode = ReadFile(filename);
+
+		vk::ShaderModuleCreateInfo moduleInfo = {};
+		moduleInfo.flags = vk::ShaderModuleCreateFlags();
+		moduleInfo.codeSize = sourceCode.size();
+		moduleInfo.pCode = reinterpret_cast<const uint32_t*>(sourceCode.data());
+	
+		try {
+			return device.createShaderModule(moduleInfo);
+		}
+		catch (vk::SystemError err) {
+#ifdef VO_DEBUG
+			VO_CORE_ERROR("Failed to create shader module for \"{0}\"", filename);
+#endif
+		}
+	}
 }

@@ -15,6 +15,8 @@ namespace vkUtil {
 	struct SwapChainFrame {
 		vk::Image Image;
 		vk::ImageView ImageView;
+		vk::Framebuffer FrameBuffer;
+		vk::CommandBuffer CommandBuffer;
 	};
 
 	// returns queue family indices
