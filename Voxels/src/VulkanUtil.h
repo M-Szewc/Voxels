@@ -17,6 +17,8 @@ namespace vkUtil {
 		vk::ImageView ImageView;
 		vk::Framebuffer FrameBuffer;
 		vk::CommandBuffer CommandBuffer;
+		vk::Semaphore ImageAveilable, RenderFinished;
+		vk::Fence InFlightFence;
 	};
 
 	// returns queue family indices

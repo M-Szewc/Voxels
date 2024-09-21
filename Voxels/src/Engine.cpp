@@ -40,10 +40,6 @@ namespace Game {
 		VO_CORE_TRACE("Destroying graphics engine");
 #endif
 
-		m_Device.destroyFence(m_InFlightFence);
-		m_Device.destroySemaphore(m_ImageAveilable);
-		m_Device.destroySemaphore(m_RenderFinished);
-
 		m_Device.destroyCommandPool(m_CommandPool);
 
 		m_Device.destroyPipeline(m_Pipeline);
@@ -51,9 +47,13 @@ namespace Game {
 		m_Device.destroyRenderPass(m_RenderPass);
 
 		//destroy image views
-		for (vkUtil::SwapChainFrame frame : m_SwapchainFrames) {
+		for (vkUtil::SwapChainFrame& frame : m_SwapchainFrames) {
 			m_Device.destroyImageView(frame.ImageView);
 			m_Device.destroyFramebuffer(frame.FrameBuffer);
+		
+			m_Device.destroyFence(frame.InFlightFence);
+			m_Device.destroySemaphore(frame.ImageAveilable);
+			m_Device.destroySemaphore(frame.RenderFinished);
 		}
 
 		//destroy device
@@ -69,37 +69,35 @@ namespace Game {
 
 		//destroy Vulkan instance
 		m_Instance.destroy();
-		//stop glfw
-		glfwTerminate();
 	}
 
 	void Engine::Render()
 	{
-		m_Device.waitForFences(1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
-		m_Device.resetFences(1, &m_InFlightFence);
+		m_Device.waitForFences(1, &m_SwapchainFrames[m_FrameNumber].InFlightFence, VK_TRUE, UINT64_MAX);
+		m_Device.resetFences(1, &m_SwapchainFrames[m_FrameNumber].InFlightFence);
 
-		uint32_t imageIndex{ m_Device.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_ImageAveilable, nullptr).value };
+		uint32_t imageIndex{ m_Device.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_SwapchainFrames[m_FrameNumber].ImageAveilable, nullptr).value };
 
-		vk::CommandBuffer commandBuffer = m_SwapchainFrames[imageIndex].CommandBuffer;
+		vk::CommandBuffer commandBuffer = m_SwapchainFrames[m_FrameNumber].CommandBuffer;
 
 		commandBuffer.reset();
 
 		RecordDrawCommands(commandBuffer, imageIndex);
 
 		vk::SubmitInfo submitInfo = {};
-		vk::Semaphore waitSemaphores[] = { m_ImageAveilable };
+		vk::Semaphore waitSemaphores[] = { m_SwapchainFrames[m_FrameNumber].ImageAveilable };
 		vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
-		vk::Semaphore signalSemaphores[] = { m_RenderFinished };
+		vk::Semaphore signalSemaphores[] = { m_SwapchainFrames[m_FrameNumber].RenderFinished };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
 		try {
-			m_GraphicsQueue.submit(submitInfo, m_InFlightFence);
+			m_GraphicsQueue.submit(submitInfo, m_SwapchainFrames[m_FrameNumber].InFlightFence);
 		}
 		catch (vk::SystemError err) {
 #ifdef VO_DEBUG
@@ -117,6 +115,7 @@ namespace Game {
 
 		m_PresentQueue.presentKHR(presentInfo);
 		
+		m_FrameNumber = (m_FrameNumber + 1) % m_MaxFramesInFlight;
 	}
 
 	// create and setup Vulkan instance
@@ -161,7 +160,11 @@ namespace Game {
 		m_SwapchainFrames = bundle.Frames;
 		m_SwapchainFormat = bundle.Format;
 		m_SwapchainExtent = bundle.Extent;
+
+		m_MaxFramesInFlight = static_cast<int>(m_SwapchainFrames.size());
+		m_FrameNumber = 0;
 	}
+
 	void Engine::SetupPipeline()
 	{
 		vkInit::GraphicsPipelineInBundle specification = {};
@@ -186,15 +189,15 @@ namespace Game {
 		vkInit::CreateFramebuffers(framebufferInput, m_SwapchainFrames);
 	
 		m_CommandPool = vkInit::CreateCommandPool(m_Device, m_PhysicalDevice, m_Surface);
-	
-		VO_CORE_INFO("size: {0}", m_SwapchainFrames.size());
 
 		vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
 		m_MainCommandBuffer = vkInit::CreateCommandBuffers(commandBufferInput);
 	
-		m_InFlightFence = vkInit::CreateFence(m_Device);
-		m_ImageAveilable = vkInit::CreateSemaphore(m_Device);
-		m_RenderFinished = vkInit::CreateSemaphore(m_Device);
+		for (vkUtil::SwapChainFrame& frame : m_SwapchainFrames) {
+			frame.InFlightFence = vkInit::CreateFence(m_Device);
+			frame.ImageAveilable = vkInit::CreateSemaphore(m_Device);
+			frame.RenderFinished = vkInit::CreateSemaphore(m_Device);
+		}
 	}
 
 	void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex)

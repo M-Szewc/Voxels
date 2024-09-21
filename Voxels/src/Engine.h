@@ -9,6 +9,7 @@ namespace Game {
 	class Engine
 	{
 	public:
+		Engine() {}
 		Engine(int width, int height, GLFWwindow* window);
 		~Engine();
 
@@ -48,8 +49,8 @@ namespace Game {
 		vk::CommandBuffer m_MainCommandBuffer;
 
 		//synchronization-related
-		vk::Fence m_InFlightFence;
-		vk::Semaphore m_ImageAveilable, m_RenderFinished;
+		int m_MaxFramesInFlight;
+		int m_FrameNumber;
 
 	private:
 		void CreateVulkanInstance();

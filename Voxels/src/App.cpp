@@ -17,6 +17,9 @@ namespace Game {
 	App::~App()
 	{
 		delete m_GraphicsEngine;
+
+		//stop glfw
+		glfwTerminate();
 	}
 
 	void App::Run()
