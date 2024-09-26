@@ -28,27 +28,12 @@ namespace vkInit {
 		}
 	}
 
-	vk::CommandBuffer CreateCommandBuffers(CommandBufferInputChunk inputChunk) {
+	vk::CommandBuffer CreateCommandBuffer(CommandBufferInputChunk inputChunk) {
 
 		vk::CommandBufferAllocateInfo allocInfo = {};
 		allocInfo.commandPool = inputChunk.commandPool;
 		allocInfo.level = vk::CommandBufferLevel::ePrimary;
 		allocInfo.commandBufferCount = 1;
-
-		for (int i = 0; i < inputChunk.frames.size(); ++i) {
-			try {
-				inputChunk.frames[i].CommandBuffer = inputChunk.device.allocateCommandBuffers(allocInfo)[0];
-
-#ifdef VO_DEBUG
-				VO_CORE_TRACE("Allocated command buffer for frame {0}", i);
-#endif
-			}
-			catch (vk::SystemError err) {
-#ifdef VO_DEBUG
-				VO_CORE_ERROR("Failed to allocate command buffer for frame {0}", i);
-#endif
-			}
-		}
 
 		try {
 			vk::CommandBuffer commandBuffer = inputChunk.device.allocateCommandBuffers(allocInfo)[0];
@@ -63,6 +48,30 @@ namespace vkInit {
 			VO_CORE_ERROR("Failed to allocate main command buffer");
 #endif
 			return nullptr;
+		}
+	}
+
+	void CreateFrameCommandBuffers(CommandBufferInputChunk inputChunk) {
+
+		vk::CommandBufferAllocateInfo allocInfo = {};
+		allocInfo.commandPool = inputChunk.commandPool;
+		allocInfo.level = vk::CommandBufferLevel::ePrimary;
+		allocInfo.commandBufferCount = 1;
+
+		//Make a command buffer for each frame
+		for (int i = 0; i < inputChunk.frames.size(); i++) {
+			try {
+				inputChunk.frames[i].CommandBuffer = inputChunk.device.allocateCommandBuffers(allocInfo)[0];
+
+#ifdef VO_DEBUG
+				VO_CORE_TRACE("Allocated command buffer for frame {0}", i);
+#endif
+			}
+			catch (vk::SystemError err) {
+#ifdef VO_DEBUG
+				VO_CORE_ERROR("Failed to allocate command buffer for frame {0}", i);
+#endif
+			}
 		}
 	}
 }

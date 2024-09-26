@@ -1,6 +1,7 @@
 #include "vopch.h"
 #include "App.h"
 
+
 namespace Game {
 
 	App::App(int width, int height)
@@ -12,11 +13,14 @@ namespace Game {
 		m_LastTime = glfwGetTime();
 
 		m_GraphicsEngine = new Engine(width, height, m_Window);
+	
+		m_Scene = new Scene();
 	}
 
 	App::~App()
 	{
 		delete m_GraphicsEngine;
+		delete m_Scene;
 
 		//stop glfw
 		glfwTerminate();
@@ -26,7 +30,7 @@ namespace Game {
 	{
 		while (!glfwWindowShouldClose(m_Window)) {
 			glfwPollEvents();
-			m_GraphicsEngine->Render();
+			m_GraphicsEngine->Render(m_Scene);
 			CalculateFrameRate();
 		}
 	}
@@ -37,8 +41,8 @@ namespace Game {
 		glfwInit();
 		//no default rendering clinent - we will hook up vulkan later
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		//resizing doesn't work now, so disable it
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 		// try to create a window
 		if (m_Window = glfwCreateWindow(width, height, m_ApplicationName, nullptr, nullptr)) {

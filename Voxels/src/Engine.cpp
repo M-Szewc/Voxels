@@ -40,24 +40,15 @@ namespace Game {
 		VO_CORE_TRACE("Destroying graphics engine");
 #endif
 
-		m_Device.destroyCommandPool(m_CommandPool);
 
 		m_Device.destroyPipeline(m_Pipeline);
-		m_Device.destroyPipelineLayout(m_Layout);
+		m_Device.destroyPipelineLayout(m_PipelineLayout);
 		m_Device.destroyRenderPass(m_RenderPass);
 
-		//destroy image views
-		for (vkUtil::SwapChainFrame& frame : m_SwapchainFrames) {
-			m_Device.destroyImageView(frame.ImageView);
-			m_Device.destroyFramebuffer(frame.FrameBuffer);
-		
-			m_Device.destroyFence(frame.InFlightFence);
-			m_Device.destroySemaphore(frame.ImageAveilable);
-			m_Device.destroySemaphore(frame.RenderFinished);
-		}
+		CleanupSwapchain();
+		m_Device.destroyCommandPool(m_CommandPool);
 
-		//destroy device
-		m_Device.destroySwapchainKHR(m_Swapchain);
+
 		m_Device.destroy();
 		//destroy surface
 		m_Instance.destroySurfaceKHR(m_Surface);
@@ -71,18 +62,22 @@ namespace Game {
 		m_Instance.destroy();
 	}
 
-	void Engine::Render()
+	void Engine::Render(Scene* scene)
 	{
 		m_Device.waitForFences(1, &m_SwapchainFrames[m_FrameNumber].InFlightFence, VK_TRUE, UINT64_MAX);
-		m_Device.resetFences(1, &m_SwapchainFrames[m_FrameNumber].InFlightFence);
 
-		uint32_t imageIndex{ m_Device.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_SwapchainFrames[m_FrameNumber].ImageAveilable, nullptr).value };
+		uint32_t imageIndex;
+		vk::ResultValue acquire = m_Device.acquireNextImageKHR(
+			m_Swapchain, UINT64_MAX, m_SwapchainFrames[m_FrameNumber].ImageAveilable, nullptr
+		);
+		imageIndex = acquire.value;
+
 
 		vk::CommandBuffer commandBuffer = m_SwapchainFrames[m_FrameNumber].CommandBuffer;
 
 		commandBuffer.reset();
 
-		RecordDrawCommands(commandBuffer, imageIndex);
+		RecordDrawCommands(commandBuffer, imageIndex, scene);
 
 		vk::SubmitInfo submitInfo = {};
 		vk::Semaphore waitSemaphores[] = { m_SwapchainFrames[m_FrameNumber].ImageAveilable };
@@ -96,6 +91,8 @@ namespace Game {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
+		m_Device.resetFences(1, &m_SwapchainFrames[m_FrameNumber].InFlightFence);
+		
 		try {
 			m_GraphicsQueue.submit(submitInfo, m_SwapchainFrames[m_FrameNumber].InFlightFence);
 		}
@@ -113,7 +110,22 @@ namespace Game {
 		presentInfo.pSwapchains = swapchains;
 		presentInfo.pImageIndices = &imageIndex;
 
-		m_PresentQueue.presentKHR(presentInfo);
+		vk::Result present;
+		try {
+			present = m_PresentQueue.presentKHR(presentInfo);
+		}
+		catch (vk::OutOfDateKHRError) {
+			present = vk::Result::eErrorOutOfDateKHR;
+		}
+
+		if (present == vk::Result::eErrorOutOfDateKHR || present == vk::Result::eSuboptimalKHR) {
+#ifdef VO_DEBUG
+			VO_CORE_INFO("Recreating swapchain");
+#endif
+			RecreateSwapchain();
+			return;
+		}
+
 		
 		m_FrameNumber = (m_FrameNumber + 1) % m_MaxFramesInFlight;
 	}
@@ -155,6 +167,13 @@ namespace Game {
 		m_PresentQueue = queues[1];
 
 		// create swapchain
+		CreateSwapchain();
+
+		m_FrameNumber = 0;
+	}
+
+	void Engine::CreateSwapchain()
+	{
 		vkInit::SwapChainBundle bundle = vkInit::CreateSwapchain(m_Device, m_PhysicalDevice, m_Surface, m_Width, m_Height);
 		m_Swapchain = bundle.Swapchain;
 		m_SwapchainFrames = bundle.Frames;
@@ -162,7 +181,26 @@ namespace Game {
 		m_SwapchainExtent = bundle.Extent;
 
 		m_MaxFramesInFlight = static_cast<int>(m_SwapchainFrames.size());
-		m_FrameNumber = 0;
+	}
+
+	void Engine::RecreateSwapchain()
+	{
+		m_Width = 0;
+		m_Height = 0;
+		while (m_Width == 0 || m_Height == 0) {
+			glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
+			glfwWaitEvents();
+		}
+
+		m_Device.waitIdle();
+
+		CleanupSwapchain();
+		CreateSwapchain();
+		CreateFramebuffers();
+		CreateFrameSyncObjects();
+		vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
+		vkInit::CreateFrameCommandBuffers(commandBufferInput);
+	
 	}
 
 	void Engine::SetupPipeline()
@@ -175,11 +213,26 @@ namespace Game {
 		specification.m_SwapchainImageFormat = m_SwapchainFormat;
 
 		vkInit::GraphicsPipelineOutBundle output = vkInit::MakeGraphicsPipeline(specification);
-		m_Layout = output.m_Layout;
+		m_PipelineLayout = output.m_PipelineLayout;
 		m_RenderPass = output.m_RenderPass;
 		m_Pipeline = output.m_Pipeline;
 	}
+
 	void Engine::FinalizeSetup()
+	{
+		CreateFramebuffers();
+
+		m_CommandPool = vkInit::CreateCommandPool(m_Device, m_PhysicalDevice, m_Surface);
+
+		vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
+		m_MainCommandBuffer = vkInit::CreateCommandBuffer(commandBufferInput);
+	
+		vkInit::CreateFrameCommandBuffers(commandBufferInput);
+
+		CreateFrameSyncObjects();
+	}
+
+	void Engine::CreateFramebuffers()
 	{
 		vkInit::FramebufferInput framebufferInput;
 		framebufferInput.device = m_Device;
@@ -187,12 +240,11 @@ namespace Game {
 		framebufferInput.swapchainExtent = m_SwapchainExtent;
 
 		vkInit::CreateFramebuffers(framebufferInput, m_SwapchainFrames);
-	
-		m_CommandPool = vkInit::CreateCommandPool(m_Device, m_PhysicalDevice, m_Surface);
 
-		vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
-		m_MainCommandBuffer = vkInit::CreateCommandBuffers(commandBufferInput);
-	
+	}
+
+	void Engine::CreateFrameSyncObjects()
+	{
 		for (vkUtil::SwapChainFrame& frame : m_SwapchainFrames) {
 			frame.InFlightFence = vkInit::CreateFence(m_Device);
 			frame.ImageAveilable = vkInit::CreateSemaphore(m_Device);
@@ -200,7 +252,7 @@ namespace Game {
 		}
 	}
 
-	void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex)
+	void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene)
 	{
 		vk::CommandBufferBeginInfo beginInfo = {};
 		try {
@@ -225,8 +277,14 @@ namespace Game {
 		commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
-
-		commandBuffer.draw(3, 1, 0, 0);
+		
+		for (glm::vec3 position : scene->m_TrianglePositions) {
+			glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+			vkUtil::ObjectData objectData;
+			objectData.model = model;
+			commandBuffer.pushConstants(m_PipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vkUtil::ObjectData), & objectData);
+			commandBuffer.draw(3, 1, 0, 0);
+		}
 
 		commandBuffer.endRenderPass();
 
@@ -239,5 +297,22 @@ namespace Game {
 #endif
 		}
 
+	}
+	void Engine::CleanupSwapchain()
+	{
+		//destroy objects connected with swapchain
+		for (vkUtil::SwapChainFrame& frame : m_SwapchainFrames) {
+			m_Device.freeCommandBuffers(m_CommandPool, frame.CommandBuffer);
+			
+			m_Device.destroyImageView(frame.ImageView);
+			m_Device.destroyFramebuffer(frame.FrameBuffer);
+
+			m_Device.destroyFence(frame.InFlightFence);
+			m_Device.destroySemaphore(frame.ImageAveilable);
+			m_Device.destroySemaphore(frame.RenderFinished);
+		}
+
+		//destroy device
+		m_Device.destroySwapchainKHR(m_Swapchain);
 	}
 }

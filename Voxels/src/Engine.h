@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vopch.h"
+#include "Scene.h"
 
 #include "VulkanUtil.h"
 
@@ -9,11 +10,10 @@ namespace Game {
 	class Engine
 	{
 	public:
-		Engine() {}
 		Engine(int width, int height, GLFWwindow* window);
 		~Engine();
 
-		void Render();
+		void Render(Scene* scene);
 
 	private:
 		int m_Width;
@@ -40,7 +40,7 @@ namespace Game {
 		vk::Extent2D m_SwapchainExtent;
 
 		//pipeline-related
-		vk::PipelineLayout m_Layout;
+		vk::PipelineLayout m_PipelineLayout;
 		vk::RenderPass m_RenderPass;
 		vk::Pipeline m_Pipeline;
 
@@ -55,10 +55,17 @@ namespace Game {
 	private:
 		void CreateVulkanInstance();
 		void SetupDevice();
+		void CreateSwapchain();
+		void RecreateSwapchain();
+
 		void SetupPipeline();
 		void FinalizeSetup();
+		void CreateFramebuffers();
+		void CreateFrameSyncObjects();
 
-		void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
+		void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+	
+		void CleanupSwapchain();
 	};
 
 }

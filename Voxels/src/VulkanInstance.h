@@ -113,7 +113,7 @@ namespace vkInit {
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 #ifdef VO_DEBUG
-		extensions.push_back("VK_EXT_debug_utils");
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
 #ifdef VO_DEBUG

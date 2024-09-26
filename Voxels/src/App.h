@@ -1,6 +1,7 @@
 #pragma once
 #include "vopch.h"
 #include "Engine.h"
+#include "Scene.h"
 
 namespace Game {
 
@@ -15,6 +16,7 @@ namespace Game {
 
 		Engine* m_GraphicsEngine;
 		GLFWwindow* m_Window;
+		Scene* m_Scene;
 		
 		double m_LastTime, m_CurrentTime;
 		int m_NumFrames{ 0 };

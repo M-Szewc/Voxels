@@ -1,6 +1,7 @@
 #pragma once
 #include "vopch.h"
 #include "shaders/Shaders.h"
+#include "RenderUtil.h"
 
 namespace vkInit {
 
@@ -13,7 +14,7 @@ namespace vkInit {
 	};
 
 	struct GraphicsPipelineOutBundle {
-		vk::PipelineLayout m_Layout;
+		vk::PipelineLayout m_PipelineLayout;
 		vk::RenderPass m_RenderPass;
 		vk::Pipeline m_Pipeline;
 	};
@@ -23,7 +24,14 @@ namespace vkInit {
 		vk::PipelineLayoutCreateInfo layoutInfo;
 		layoutInfo.flags = vk::PipelineLayoutCreateFlags();
 		layoutInfo.setLayoutCount = 0;
-		layoutInfo.pushConstantRangeCount = 0;
+
+		layoutInfo.pushConstantRangeCount = 1;
+		vk::PushConstantRange pushConstantInfo;
+		pushConstantInfo.offset = 0;
+		pushConstantInfo.size = sizeof(vkUtil::ObjectData);
+		pushConstantInfo.stageFlags = vk::ShaderStageFlagBits::eVertex;
+		layoutInfo.pPushConstantRanges = &pushConstantInfo;
+
 		try {
 			return device.createPipelineLayout(layoutInfo);
 		}
@@ -207,7 +215,7 @@ namespace vkInit {
 		}
 
 		GraphicsPipelineOutBundle output = {};
-		output.m_Layout = layout;
+		output.m_PipelineLayout = layout;
 		output.m_RenderPass = renderPass;
 		output.m_Pipeline = graphicsPipeline;
 
