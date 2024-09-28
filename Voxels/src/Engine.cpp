@@ -10,6 +10,7 @@
 #include "FrameBuffer.h"
 #include "Commands.h"
 #include "Sync.h"
+#include "RenderUtil.h"
 
 namespace Game {
 	Engine::Engine(int width, int height, GLFWwindow* window):
@@ -29,6 +30,8 @@ namespace Game {
 		SetupDevice();
 		SetupPipeline();
 		FinalizeSetup();
+
+		CreateAssets();
 	}
 
 
@@ -48,13 +51,14 @@ namespace Game {
 		CleanupSwapchain();
 		m_Device.destroyCommandPool(m_CommandPool);
 
+		delete m_TriangleMesh;
 
 		m_Device.destroy();
 		//destroy surface
 		m_Instance.destroySurfaceKHR(m_Surface);
 
-#ifdef VO_DEBUG
 		//destroy debug messanger
+#ifdef USE_VALIDATION_LAYER
 		m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessanger, nullptr, m_DispatchLoaderDY);
 #endif
 
@@ -134,10 +138,10 @@ namespace Game {
 	void Engine::CreateVulkanInstance()
 	{
 		m_Instance = vkInit::MakeInstance(m_ApplicationName);
-		m_DispatchLoaderDY = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
 
 		//create debug messanger
-#ifdef VO_DEBUG
+#ifdef USE_VALIDATION_LAYER
+		m_DispatchLoaderDY = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
 		m_DebugMessanger = vkInit::CreateDebugMessanger(m_Instance, m_DispatchLoaderDY);
 #endif
 
@@ -252,6 +256,19 @@ namespace Game {
 		}
 	}
 
+	void Engine::CreateAssets()
+	{
+		m_TriangleMesh = new vkMesh::TriangleMesh(m_Device, m_PhysicalDevice);
+
+	}
+
+	void Engine::PrepareScene(vk::CommandBuffer commandbuffer)
+	{
+		vk::Buffer vertexBuffers[] = { m_TriangleMesh->m_VertexBuffer.buffer };
+		vk::DeviceSize offsets[] = { 0 };
+		commandbuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+	}
+
 	void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene)
 	{
 		vk::CommandBufferBeginInfo beginInfo = {};
@@ -278,6 +295,8 @@ namespace Game {
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
 		
+		PrepareScene(commandBuffer);
+
 		for (glm::vec3 position : scene->m_TrianglePositions) {
 			glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
 			vkUtil::ObjectData objectData;

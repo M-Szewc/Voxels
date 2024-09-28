@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
-
-#include "vopch.h"
+#include "Base.h"
 #include "spdlog/spdlog.h"
 
 namespace Game {

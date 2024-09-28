@@ -1,7 +1,8 @@
 #pragma once
 
-#include "vopch.h"
+#include "Base.h"
 #include "Scene.h"
+#include "TriangleMesh.h"
 
 #include "VulkanUtil.h"
 
@@ -52,6 +53,9 @@ namespace Game {
 		int m_MaxFramesInFlight;
 		int m_FrameNumber;
 
+		//asset pointers
+		vkMesh::TriangleMesh* m_TriangleMesh;
+
 	private:
 		void CreateVulkanInstance();
 		void SetupDevice();
@@ -62,6 +66,9 @@ namespace Game {
 		void FinalizeSetup();
 		void CreateFramebuffers();
 		void CreateFrameSyncObjects();
+
+		void CreateAssets();
+		void PrepareScene(vk::CommandBuffer commandbuffer);
 
 		void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 	
