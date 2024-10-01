@@ -1,8 +1,8 @@
 #pragma once
 #include "Base.h"
 
-#include "VulkanLogger.h"
-#include "VulkanUtil.h"
+#include "vkInit/VulkanLogger.h"
+#include "vkUtil/VulkanUtil.h"
 
 namespace vkInit {
 

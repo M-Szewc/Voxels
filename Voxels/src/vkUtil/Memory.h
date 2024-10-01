@@ -8,6 +8,7 @@ namespace vkUtil {
 		vk::BufferUsageFlags usage;
 		vk::Device logicalDevice;
 		vk::PhysicalDevice physicalDevice;
+		vk::MemoryPropertyFlags memoryProperties;
 	};
 
 	struct Buffer {
@@ -20,4 +21,6 @@ namespace vkUtil {
 	uint32_t FindMemoryTypeIndex(vk::PhysicalDevice physicalDevice, uint32_t supportedMemoryIndices, vk::MemoryPropertyFlags requestedProperties);
 
 	void AllocateBufferMemory(Buffer& buffer, const BufferInput& input);
+
+	void CopyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, vk::DeviceSize size, vk::Queue queue, vk::CommandBuffer commandBuffer);
 }

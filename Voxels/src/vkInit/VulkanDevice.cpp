@@ -1,8 +1,9 @@
 #include "vopch.h"
 
 #include "VulkanDevice.h"
-#include "VulkanUtil.h"
-#include "VulkanLogger.h"
+
+#include "vkUtil/VulkanUtil.h"
+#include "vkInit/VulkanLogger.h"
 
 namespace vkInit {
 

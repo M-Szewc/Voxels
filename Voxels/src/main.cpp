@@ -13,7 +13,7 @@ int main() {
 #ifdef VO_DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-	Game::App app(640, 480);
+	Game::App app(1280, 720);
 
 	VO_TRACE("App created");
 

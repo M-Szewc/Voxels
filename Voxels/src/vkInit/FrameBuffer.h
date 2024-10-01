@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base.h"
-#include "VulkanUtil.h"
+#include "vkUtil/VulkanUtil.h"
 
 namespace vkInit{
 

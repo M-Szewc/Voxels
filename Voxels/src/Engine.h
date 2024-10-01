@@ -2,9 +2,9 @@
 
 #include "Base.h"
 #include "Scene.h"
-#include "TriangleMesh.h"
+#include "vkUtil/VertexManager.h"
 
-#include "VulkanUtil.h"
+#include "vkUtil/VulkanUtil.h"
 
 namespace Game {
 
@@ -53,8 +53,12 @@ namespace Game {
 		int m_MaxFramesInFlight;
 		int m_FrameNumber;
 
+		//descriptor objects
+		vk::DescriptorSetLayout m_DescriptorSetLayout;
+		vk::DescriptorPool m_DescriptorPool;
+
 		//asset pointers
-		vkMesh::TriangleMesh* m_TriangleMesh;
+		vkUtil::VertexManager* m_Meshes;
 
 	private:
 		void CreateVulkanInstance();
@@ -62,14 +66,17 @@ namespace Game {
 		void CreateSwapchain();
 		void RecreateSwapchain();
 
+		void CreateDescriptorSetLayout();
 		void SetupPipeline();
+
 		void FinalizeSetup();
 		void CreateFramebuffers();
-		void CreateFrameSyncObjects();
+		void CreateFrameResources();
 
 		void CreateAssets();
+		
 		void PrepareScene(vk::CommandBuffer commandbuffer);
-
+		void PrepareFrame(uint32_t imageIndex, Scene* scene);
 		void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 	
 		void CleanupSwapchain();

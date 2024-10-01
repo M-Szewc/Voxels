@@ -9,6 +9,7 @@ namespace vkInit {
 		std::string m_FragmentFilepath;
 		vk::Extent2D m_SwapchainExtent;
 		vk::Format m_SwapchainImageFormat;
+		vk::DescriptorSetLayout m_DescriptorSetLayout;
 	};
 
 	struct GraphicsPipelineOutBundle {
@@ -17,7 +18,7 @@ namespace vkInit {
 		vk::Pipeline m_Pipeline;
 	};
 
-	vk::PipelineLayout CreatePipelineLayout(vk::Device device);
+	vk::PipelineLayout CreatePipelineLayout(vk::Device device, vk::DescriptorSetLayout layout);
 
 	vk::RenderPass CreateRenderPass(vk::Device device, vk::Format swapchainImageFormat);
 	

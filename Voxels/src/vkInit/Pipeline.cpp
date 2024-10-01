@@ -2,24 +2,21 @@
 
 #include "Pipeline.h"
 
-#include "RenderUtil.h"
+#include "vkUtil/RenderUtil.h"
 #include "shaders/Shaders.h"
-#include "Mesh.h"
+#include "vkMesh/Mesh.h"
 
 namespace vkInit {
 
-	vk::PipelineLayout CreatePipelineLayout(vk::Device device) {
+	vk::PipelineLayout CreatePipelineLayout(vk::Device device, vk::DescriptorSetLayout layout) {
 
 		vk::PipelineLayoutCreateInfo layoutInfo;
 		layoutInfo.flags = vk::PipelineLayoutCreateFlags();
-		layoutInfo.setLayoutCount = 0;
+		
+		layoutInfo.setLayoutCount = 1;
+		layoutInfo.pSetLayouts = &layout;
 
-		layoutInfo.pushConstantRangeCount = 1;
-		vk::PushConstantRange pushConstantInfo;
-		pushConstantInfo.offset = 0;
-		pushConstantInfo.size = sizeof(vkUtil::ObjectData);
-		pushConstantInfo.stageFlags = vk::ShaderStageFlagBits::eVertex;
-		layoutInfo.pPushConstantRanges = &pushConstantInfo;
+		layoutInfo.pushConstantRangeCount = 0;
 
 		try {
 			return device.createPipelineLayout(layoutInfo);
@@ -180,7 +177,7 @@ namespace vkInit {
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Create Pipeline Layout");
 #endif
-		vk::PipelineLayout layout = CreatePipelineLayout(specification.m_Device);
+		vk::PipelineLayout layout = CreatePipelineLayout(specification.m_Device, specification.m_DescriptorSetLayout);
 		pipelineInfo.layout = layout;
 
 		//Renderpass

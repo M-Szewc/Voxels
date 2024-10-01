@@ -2,15 +2,16 @@
 
 #include "Engine.h"
 
-#include "VulkanInstance.h"
-#include "VulkanLogger.h"
-#include "VulkanDevice.h"
-#include "Swapchain.h"
-#include "Pipeline.h"
-#include "FrameBuffer.h"
-#include "Commands.h"
-#include "Sync.h"
-#include "RenderUtil.h"
+#include "vkInit/VulkanInstance.h"
+#include "vkInit/VulkanLogger.h"
+#include "vkInit/VulkanDevice.h"
+#include "vkInit/Swapchain.h"
+#include "vkInit/Pipeline.h"
+#include "vkInit/FrameBuffer.h"
+#include "vkInit/Commands.h"
+#include "vkInit/Sync.h"
+#include "vkUtil/RenderUtil.h"
+#include "vkInit/Descriptors.h"
 
 namespace Game {
 	Engine::Engine(int width, int height, GLFWwindow* window):
@@ -27,7 +28,10 @@ namespace Game {
 		m_Height = 480;
 
 		CreateVulkanInstance();
+
 		SetupDevice();
+
+		CreateDescriptorSetLayout();
 		SetupPipeline();
 		FinalizeSetup();
 
@@ -51,7 +55,9 @@ namespace Game {
 		CleanupSwapchain();
 		m_Device.destroyCommandPool(m_CommandPool);
 
-		delete m_TriangleMesh;
+		m_Device.destroyDescriptorSetLayout(m_DescriptorSetLayout);
+
+		delete m_Meshes;
 
 		m_Device.destroy();
 		//destroy surface
@@ -80,6 +86,8 @@ namespace Game {
 		vk::CommandBuffer commandBuffer = m_SwapchainFrames[m_FrameNumber].CommandBuffer;
 
 		commandBuffer.reset();
+
+		PrepareFrame(imageIndex, scene);
 
 		RecordDrawCommands(commandBuffer, imageIndex, scene);
 
@@ -201,10 +209,28 @@ namespace Game {
 		CleanupSwapchain();
 		CreateSwapchain();
 		CreateFramebuffers();
-		CreateFrameSyncObjects();
+		CreateFrameResources();
 		vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
 		vkInit::CreateFrameCommandBuffers(commandBufferInput);
 	
+	}
+
+	void Engine::CreateDescriptorSetLayout()
+	{
+		vkInit::DescriptorSetLayoutData bindings;
+		bindings.Count = 2;
+
+		bindings.Indices.push_back(0);
+		bindings.Types.push_back(vk::DescriptorType::eUniformBuffer);
+		bindings.Counts.push_back(1);
+		bindings.Stages.push_back(vk::ShaderStageFlagBits::eVertex);
+
+		bindings.Indices.push_back(1);
+		bindings.Types.push_back(vk::DescriptorType::eStorageBuffer);
+		bindings.Counts.push_back(1);
+		bindings.Stages.push_back(vk::ShaderStageFlagBits::eVertex);
+
+		m_DescriptorSetLayout = vkInit::CreateDescriptorSetLayout(m_Device, bindings);
 	}
 
 	void Engine::SetupPipeline()
@@ -215,6 +241,7 @@ namespace Game {
 		specification.m_FragmentFilepath = "shaders/fragment.spv";
 		specification.m_SwapchainExtent = m_SwapchainExtent;
 		specification.m_SwapchainImageFormat = m_SwapchainFormat;
+		specification.m_DescriptorSetLayout = m_DescriptorSetLayout;
 
 		vkInit::GraphicsPipelineOutBundle output = vkInit::MakeGraphicsPipeline(specification);
 		m_PipelineLayout = output.m_PipelineLayout;
@@ -233,7 +260,7 @@ namespace Game {
 	
 		vkInit::CreateFrameCommandBuffers(commandBufferInput);
 
-		CreateFrameSyncObjects();
+		CreateFrameResources();
 	}
 
 	void Engine::CreateFramebuffers()
@@ -247,26 +274,127 @@ namespace Game {
 
 	}
 
-	void Engine::CreateFrameSyncObjects()
+	void Engine::CreateFrameResources()
 	{
+		vkInit::DescriptorSetLayoutData bindings;
+		bindings.Count = 2;
+		bindings.Types.push_back(vk::DescriptorType::eUniformBuffer);
+		bindings.Types.push_back(vk::DescriptorType::eStorageBuffer);
+		m_DescriptorPool = vkInit::CreateDescriptorPool(m_Device, static_cast<uint32_t>(m_SwapchainFrames.size()), bindings);
+
 		for (vkUtil::SwapChainFrame& frame : m_SwapchainFrames) {
 			frame.InFlightFence = vkInit::CreateFence(m_Device);
 			frame.ImageAveilable = vkInit::CreateSemaphore(m_Device);
 			frame.RenderFinished = vkInit::CreateSemaphore(m_Device);
+			
+			frame.CreateDescriptorResources(m_Device, m_PhysicalDevice);
+		
+			frame.DescriptorSet = vkInit::AllocateDescriptorSet(m_Device, m_DescriptorPool, m_DescriptorSetLayout);
 		}
 	}
 
 	void Engine::CreateAssets()
 	{
-		m_TriangleMesh = new vkMesh::TriangleMesh(m_Device, m_PhysicalDevice);
+		m_Meshes = new vkUtil::VertexManager();
 
+		std::vector<float> vertices = { {
+			 0.0f, -0.05f, 0.0f, 1.0f, 0.0f,
+			 0.05f, 0.05f, 0.0f, 1.0f, 0.0f,
+			-0.05f, 0.05f, 0.0f, 1.0f, 0.0f
+		} };
+		vkUtil::MeshType type = vkUtil::MeshType::TRIANGLE;
+
+		m_Meshes->Consume(type, vertices);
+
+		vertices = { {
+			 -0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
+			 -0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
+			  0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
+			  0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
+			  0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
+			 -0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
+		} };
+		type = vkUtil::MeshType::SQUARE;
+
+		m_Meshes->Consume(type, vertices);
+
+		vertices = { {
+			  0.0f,  -0.05f, 0.0f, 0.0f, 1.0f,
+			  0.05f, -0.01f, 0.0f, 0.0f, 1.0f,
+			 -0.05f, -0.01f, 0.0f, 0.0f, 1.0f,
+			 -0.05f, -0.01f, 0.0f, 0.0f, 1.0f,
+			  0.05f, -0.01f, 0.0f, 0.0f, 1.0f,
+			  0.03f,  0.05f, 0.0f, 0.0f, 1.0f,
+			 -0.05f, -0.01f, 0.0f, 0.0f, 1.0f,
+			  0.03f,  0.05f, 0.0f, 0.0f, 1.0f,
+			 -0.03f,  0.05f, 0.0f, 0.0f, 1.0f,
+		} };
+		type = vkUtil::MeshType::PENTAGON;
+
+		m_Meshes->Consume(type, vertices);
+
+		vkUtil::FinalizationChunk finalizationChunk;
+		finalizationChunk.logicalDevice = m_Device;
+		finalizationChunk.physicalDevice = m_PhysicalDevice;
+		finalizationChunk.queue = m_GraphicsQueue;
+		finalizationChunk.commandBuffer = m_MainCommandBuffer;
+
+		m_Meshes->Finalize(finalizationChunk);
 	}
 
 	void Engine::PrepareScene(vk::CommandBuffer commandbuffer)
 	{
-		vk::Buffer vertexBuffers[] = { m_TriangleMesh->m_VertexBuffer.buffer };
+		vk::Buffer vertexBuffers[] = { m_Meshes->m_VertexBuffer.buffer };
 		vk::DeviceSize offsets[] = { 0 };
 		commandbuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+	}
+
+	void Engine::PrepareFrame(uint32_t imageIndex, Scene* scene)
+	{
+
+		vkUtil::SwapChainFrame& _frame = m_SwapchainFrames[imageIndex];
+
+		glm::vec3 eye = { 1.0f, 0.0f, -1.0f };
+		glm::vec3 center = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 up = { 0.0f, 0.0f, -1.0f };
+		glm::mat4 view = glm::lookAt(eye, center, up);
+
+		glm::mat4 projection = glm::perspective(
+			glm::radians(45.0f),
+			static_cast<float>(m_SwapchainExtent.width) / static_cast<float>(m_SwapchainExtent.height),
+			0.1f, 10.0f
+		);
+
+		projection[1][1] *= -1;
+
+		_frame.CameraData.view = view;
+		_frame.CameraData.projection = projection;
+		_frame.CameraData.viewProjection = projection * view;
+		memcpy(
+			_frame.CameraDataWriteLocation,
+			&(_frame.CameraData),
+			sizeof(vkUtil::UniformBufferObject)
+		);
+
+		size_t i = 0;
+		for (glm::vec3& position : scene->m_TrianglePositions) {
+			_frame.ModelTransforms[i++] = glm::translate(glm::mat4(1.0f), position);
+		}
+		for (glm::vec3& position : scene->m_SquarePositions) {
+			_frame.ModelTransforms[i++] = glm::translate(glm::mat4(1.0f), position);
+		}
+		for (glm::vec3& position : scene->m_PentagonPositions) {
+			_frame.ModelTransforms[i++] = glm::translate(glm::mat4(1.0f), position);
+		}
+
+		memcpy(
+			_frame.ModelBufferWriteLocation,
+			_frame.ModelTransforms.data(),
+			i * sizeof(glm::mat4)
+		);
+
+		_frame.WriteDescriptorSet(m_Device);
+		
 	}
 
 	void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene)
@@ -293,17 +421,32 @@ namespace Game {
 
 		commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 
+		commandBuffer.bindDescriptorSets(
+			vk::PipelineBindPoint::eGraphics, 
+			m_PipelineLayout, 0, m_SwapchainFrames[imageIndex].DescriptorSet,
+			nullptr
+		);
+
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
 		
 		PrepareScene(commandBuffer);
+		int firstVertex = m_Meshes->m_Offsets.find(vkUtil::MeshType::TRIANGLE)->second;
+		int vertexCount = m_Meshes->m_Sizes.find(vkUtil::MeshType::TRIANGLE)->second;
+		uint32_t startInstance = 0;
+		uint32_t instanceCount = static_cast<uint32_t>(scene->m_TrianglePositions.size());
+		commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
 
-		for (glm::vec3 position : scene->m_TrianglePositions) {
-			glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-			vkUtil::ObjectData objectData;
-			objectData.model = model;
-			commandBuffer.pushConstants(m_PipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vkUtil::ObjectData), & objectData);
-			commandBuffer.draw(3, 1, 0, 0);
-		}
+		startInstance += instanceCount;
+		instanceCount = static_cast<uint32_t>(scene->m_SquarePositions.size());
+		firstVertex = m_Meshes->m_Offsets.find(vkUtil::MeshType::SQUARE)->second;
+		vertexCount = m_Meshes->m_Sizes.find(vkUtil::MeshType::SQUARE)->second;
+		commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
+
+		startInstance += instanceCount;
+		instanceCount = static_cast<uint32_t>(scene->m_PentagonPositions.size());
+		firstVertex = m_Meshes->m_Offsets.find(vkUtil::MeshType::PENTAGON)->second;
+		vertexCount = m_Meshes->m_Sizes.find(vkUtil::MeshType::PENTAGON)->second;
+		commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
 
 		commandBuffer.endRenderPass();
 
@@ -317,6 +460,7 @@ namespace Game {
 		}
 
 	}
+	
 	void Engine::CleanupSwapchain()
 	{
 		//destroy objects connected with swapchain
@@ -329,9 +473,20 @@ namespace Game {
 			m_Device.destroyFence(frame.InFlightFence);
 			m_Device.destroySemaphore(frame.ImageAveilable);
 			m_Device.destroySemaphore(frame.RenderFinished);
+		
+			m_Device.unmapMemory(frame.CameraDataBuffer.bufferMemory);
+			m_Device.freeMemory(frame.CameraDataBuffer.bufferMemory);
+			m_Device.destroyBuffer(frame.CameraDataBuffer.buffer);
+		
+			m_Device.unmapMemory(frame.ModelBuffer.bufferMemory);
+			m_Device.freeMemory(frame.ModelBuffer.bufferMemory);
+			m_Device.destroyBuffer(frame.ModelBuffer.buffer);
+
 		}
 
 		//destroy device
 		m_Device.destroySwapchainKHR(m_Swapchain);
+	
+		m_Device.destroyDescriptorPool(m_DescriptorPool);
 	}
 }

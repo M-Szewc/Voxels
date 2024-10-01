@@ -4,7 +4,8 @@
 
 #ifdef VO_DEBUG
 
-//#define USE_VALIDATION_LAYER
+// Validation Layer may cause memory leaks when used with push constants for some reason
+#define USE_VALIDATION_LAYER
 
 #endif
 
