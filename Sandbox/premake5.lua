@@ -1,59 +1,36 @@
-project "Voxels"
-	kind "SharedLib"
+project "Sandbox"
+	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "vopch.h"
-	pchsource "src/vopch.cpp"
-
 	files
 	{
-		"vopch.h",
 		"src/**.h",
 		"src/**.cpp"
 	}
 
 	includedirs
 	{
-		".",
 		"src",
+		"%{wks.location}/Voxels/src",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Vulkan}",
 		"%{IncludeDir.spdlog}"
 	}
 
-	libdirs
-	{
-		"vendor/VulkanSDK/Lib"
-	}
-
 	links
 	{
-		"GLFW",
-		"vulkan-1"
+		"Voxels"
 	}
 
 	defines "GLFW_INCLUDE_VULKAN"
 
 	filter "system:windows"
 		systemversion "latest"
-		staticruntime "On"
-		
-		defines
-		{
-			"VO_PLATFORM_WINDOWS",
-			"VO_BUILD_DLL"
-		}	
-
-		postbuildcommands
-		{
-			("{COPYFILE} %{wks.location}bin/" .. outputdir .. "/Voxels %{wks.location}bin/" .. outputdir .. "/Sandbox"),
-			("call %{wks.location}Voxels/shaders/shader_compile.bat %{wks.location}Voxels/shaders"),
-			("{COPYFILE} %{wks.location}Voxels/shaders/compiled %{wks.location}Sandbox/shaders/compiled")
-		}
+		defines "VO_PLATFORM_WINDOWS"
 
 	filter "configurations:Debug"
 		defines "VO_DEBUG"

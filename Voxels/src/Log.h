@@ -5,7 +5,7 @@
 
 namespace Game {
 
-	class Log
+	class VO_API Log
 	{
 	public:
 		static void Init();
@@ -45,6 +45,20 @@ namespace Game {
 
 // clear engine and vulkan logs in distriution
 #ifdef VO_DISTRIBUTION
+#define VO_CORE_ERROR
+#define VO_CORE_WARN
+#define VO_CORE_INFO
+#define VO_CORE_TRACE
+#define VO_CORE_FATAL
+
+#define VO_VULKAN_ERROR
+#define VO_VULKAN_WARN
+#define VO_VULKAN_INFO
+#define VO_VULKAN_TRACE
+#define VO_VULKAN_FATAL
+#endif
+
+#ifndef VO_BUILD_DLL
 #define VO_CORE_ERROR
 #define VO_CORE_WARN
 #define VO_CORE_INFO

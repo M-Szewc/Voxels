@@ -5,7 +5,7 @@
 
 namespace Game {
 
-	class App
+	class VO_API App
 	{
 	public:
 		App(int width, int height);

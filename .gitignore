@@ -13,3 +13,6 @@ bin-int/
 
 # temporary vulkan
 Voxels/vendor/VulkanSDK/
+
+# Sandbox shaders
+Sandbox/shaders/

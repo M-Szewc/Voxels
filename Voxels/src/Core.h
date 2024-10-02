@@ -2,13 +2,19 @@
 
 #ifdef VO_PLATFORM_WINDOWS
 
-#ifdef VO_DEBUG
+	#ifdef VO_BUILD_DLL
+		#define VO_API __declspec(dllexport)
+	#else
+		#define VO_API __declspec(dllimport)
+	#endif	
 
-// Validation Layer may cause memory leaks when used with push constants for some reason
-#define USE_VALIDATION_LAYER
+	#ifdef VO_DEBUG
 
-#endif
+		// Validation Layer may cause memory leaks when used with push constants for some reason
+		#define USE_VALIDATION_LAYER
+
+	#endif
 
 #else
-	#error OnlyWindowsSupported
+	#error Only windows is supported!
 #endif

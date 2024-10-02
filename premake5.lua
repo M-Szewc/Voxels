@@ -2,7 +2,7 @@ include "Dependencies.lua"
 
 workspace "Voxels"
 	architecture "x64"
-	startproject "Voxels"
+	startproject "Sandbox"
 	
 	configurations
 	{
@@ -15,4 +15,5 @@ group "Dependencies"
 	include "Voxels/vendor/GLFW"
 group ""
 
+include "Sandbox"
 include "Voxels"

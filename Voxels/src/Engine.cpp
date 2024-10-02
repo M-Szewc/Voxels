@@ -237,8 +237,8 @@ namespace Game {
 	{
 		vkInit::GraphicsPipelineInBundle specification = {};
 		specification.m_Device = m_Device;
-		specification.m_VertexFilepath = "shaders/vertex.spv";
-		specification.m_FragmentFilepath = "shaders/fragment.spv";
+		specification.m_VertexFilepath = "shaders/compiled/vertex.spv";
+		specification.m_FragmentFilepath = "shaders/compiled/fragment.spv";
 		specification.m_SwapchainExtent = m_SwapchainExtent;
 		specification.m_SwapchainImageFormat = m_SwapchainFormat;
 		specification.m_DescriptorSetLayout = m_DescriptorSetLayout;
