@@ -27,7 +27,7 @@ project "Voxels"
 
 	libdirs
 	{
-		"vendor/VulkanSDK/Lib"
+		"%{VULKAN_SDK}/Lib"
 	}
 
 	links

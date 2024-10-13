@@ -11,8 +11,5 @@ bin-int/
 **.vcxproj.user
 **.csproj
 
-# temporary vulkan
-Voxels/vendor/VulkanSDK/
-
 # Sandbox shaders
 Sandbox/shaders/
