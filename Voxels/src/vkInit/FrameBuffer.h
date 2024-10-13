@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Base.h"
+#include "Core/Base.h"
 #include "vkUtil/VulkanUtil.h"
 
 namespace vkInit{
 
 	struct FramebufferInput {
-		vk::Device device;
-		vk::RenderPass renderPass;
-		vk::Extent2D swapchainExtent;
+		vk::Device Device;
+		vk::RenderPass RenderPass;
+		vk::Extent2D SwapchainExtent;
 	};
 
 	void CreateFramebuffers(FramebufferInput inputChunk, std::vector<vkUtil::SwapChainFrame>& frames);

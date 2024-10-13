@@ -2,6 +2,6 @@
 
 // for use by applications, not engine itself
 
-#include "Core.h"
-#include "App.h"
-#include "Log.h"
+#include "Core/Core.h"
+#include "Core/App.h"
+#include "Core/Log.h"

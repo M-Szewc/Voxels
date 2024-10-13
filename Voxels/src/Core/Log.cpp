@@ -1,9 +1,9 @@
 #include "vopch.h"
 
-#include "Log.h"
+#include "Core/Log.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-namespace Game {
+namespace VoxelEngine {
 
 	std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
 	std::shared_ptr<spdlog::logger> Log::s_VulkanLogger;

@@ -1,13 +1,13 @@
 #pragma once
-#include "Base.h"
+#include "Core/Base.h"
 #include "vkUtil/VulkanUtil.h"
 
 namespace vkInit {
 
 	struct CommandBufferInputChunk {
-		vk::Device device;
-		vk::CommandPool commandPool;
-		std::vector<vkUtil::SwapChainFrame>& frames;
+		vk::Device Device;
+		vk::CommandPool CommandPool;
+		std::vector<vkUtil::SwapChainFrame>& Frames;
 	};
 
 	vk::CommandPool CreateCommandPool(vk::Device device, vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface);

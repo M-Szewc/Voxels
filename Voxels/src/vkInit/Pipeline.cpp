@@ -96,7 +96,7 @@ namespace vkInit {
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Create vertex shader module");
 #endif
-		vk::ShaderModule vertexShader = vkUtil::CreateModule(specification.m_VertexFilepath, specification.m_Device);
+		vk::ShaderModule vertexShader = vkUtil::CreateModule(specification.VertexFilepath, specification.Device);
 		vk::PipelineShaderStageCreateInfo vertexShaderInfo = {};
 		vertexShaderInfo.flags = vk::PipelineShaderStageCreateFlags();
 		vertexShaderInfo.stage = vk::ShaderStageFlagBits::eVertex;
@@ -108,14 +108,14 @@ namespace vkInit {
 		vk::Viewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = specification.m_SwapchainExtent.width;
-		viewport.height = specification.m_SwapchainExtent.height;
+		viewport.width = specification.SwapchainExtent.width;
+		viewport.height = specification.SwapchainExtent.height;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vk::Rect2D scissor = {};
 		scissor.offset.x = 0.0f;
 		scissor.offset.y = 0.0f;
-		scissor.extent = specification.m_SwapchainExtent;
+		scissor.extent = specification.SwapchainExtent;
 		vk::PipelineViewportStateCreateInfo viewportState = {};
 		viewportState.flags = vk::PipelineViewportStateCreateFlags();
 		viewportState.viewportCount = 1;
@@ -140,7 +140,7 @@ namespace vkInit {
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Create fragment shader module");
 #endif
-		vk::ShaderModule fragmentShader = vkUtil::CreateModule(specification.m_FragmentFilepath, specification.m_Device);
+		vk::ShaderModule fragmentShader = vkUtil::CreateModule(specification.FragmentFilepath, specification.Device);
 		vk::PipelineShaderStageCreateInfo fragmentShaderInfo = {};
 		fragmentShaderInfo.flags = vk::PipelineShaderStageCreateFlags();
 		fragmentShaderInfo.stage = vk::ShaderStageFlagBits::eFragment;
@@ -177,14 +177,14 @@ namespace vkInit {
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Create Pipeline Layout");
 #endif
-		vk::PipelineLayout layout = CreatePipelineLayout(specification.m_Device, specification.m_DescriptorSetLayout);
+		vk::PipelineLayout layout = CreatePipelineLayout(specification.Device, specification.DescriptorSetLayout);
 		pipelineInfo.layout = layout;
 
 		//Renderpass
 #ifdef VO_DEBUG
 		VO_CORE_TRACE("Create RenderPass");
 #endif
-		vk::RenderPass renderPass = CreateRenderPass(specification.m_Device, specification.m_SwapchainImageFormat);
+		vk::RenderPass renderPass = CreateRenderPass(specification.Device, specification.SwapchainImageFormat);
 		pipelineInfo.renderPass = renderPass;
 
 		//Flags
@@ -196,7 +196,7 @@ namespace vkInit {
 #endif
 		vk::Pipeline graphicsPipeline;
 		try {
-			graphicsPipeline = (specification.m_Device.createGraphicsPipeline(nullptr, pipelineInfo)).value;
+			graphicsPipeline = (specification.Device.createGraphicsPipeline(nullptr, pipelineInfo)).value;
 		}
 		catch (vk::SystemError err) {
 #ifdef VO_DEBUG
@@ -210,8 +210,8 @@ namespace vkInit {
 		output.m_Pipeline = graphicsPipeline;
 
 
-		specification.m_Device.destroyShaderModule(vertexShader);
-		specification.m_Device.destroyShaderModule(fragmentShader);
+		specification.Device.destroyShaderModule(vertexShader);
+		specification.Device.destroyShaderModule(fragmentShader);
 		return output;
 	}
 }

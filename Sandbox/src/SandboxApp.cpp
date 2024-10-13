@@ -1,6 +1,6 @@
 #include <Voxels.h>
 
-class Sandbox : public Game::App
+class Sandbox : public VoxelEngine::App
 {
 public:
 	Sandbox(int width, int height)
@@ -18,11 +18,13 @@ int main()
 {
 	Sandbox* sandbox = new Sandbox(1280, 720);
 
-	VO_TRACE("App created");
+	VO_INFO("App created");
 	
 	sandbox->Run();
 
-	VO_TRACE("App closed");
+	VO_INFO("App stopped running");
 
 	delete sandbox;
+
+	VO_INFO("App closed");
 }

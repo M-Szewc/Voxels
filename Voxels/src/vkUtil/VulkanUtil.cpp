@@ -17,7 +17,7 @@ namespace vkUtil {
 		int i = 0;
 		for (const vk::QueueFamilyProperties& queueFamily : queueFamilies) {
 			if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
-				indices.GraphicsFamily = i;
+				indices.m_GraphicsFamily = i;
 
 #ifdef VO_DEBUG
 				VO_CORE_INFO("Queue Family {0} is suitable for graphics", i);
@@ -25,7 +25,7 @@ namespace vkUtil {
 			}
 
 			if (device.getSurfaceSupportKHR(i, surface)) {
-				indices.PresentFamily = i;
+				indices.m_PresentFamily = i;
 
 #ifdef VO_DEBUG
 				VO_CORE_INFO("Queue Family {0} is suitable for presenting", i);
@@ -46,33 +46,33 @@ namespace vkUtil {
 	{
 
 		BufferInput input;
-		input.logicalDevice = logicalDevice;
-		input.physicalDevice = physicalDevice;
-		input.memoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		input.size = sizeof(UniformBufferObject);
-		input.usage = vk::BufferUsageFlagBits::eUniformBuffer;
-		CameraDataBuffer = CreateBuffer(input);
+		input.LogicalDevice = logicalDevice;
+		input.PhysicalDevice = physicalDevice;
+		input.MemoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+		input.Size = sizeof(UniformBufferObject);
+		input.Usage = vk::BufferUsageFlagBits::eUniformBuffer;
+		m_CameraDataBuffer = CreateBuffer(input);
 
-		CameraDataWriteLocation = logicalDevice.mapMemory(CameraDataBuffer.bufferMemory, 0, sizeof(UniformBufferObject));
+		m_CameraDataWriteLocation = logicalDevice.mapMemory(m_CameraDataBuffer.m_BufferMemory, 0, sizeof(UniformBufferObject));
 	
-		input.size = 1024 * sizeof(glm::mat4);
-		input.usage = vk::BufferUsageFlagBits::eStorageBuffer;
-		ModelBuffer = CreateBuffer(input);
+		input.Size = 1024 * sizeof(glm::mat4);
+		input.Usage = vk::BufferUsageFlagBits::eStorageBuffer;
+		m_ModelBuffer = CreateBuffer(input);
 
-		ModelBufferWriteLocation = logicalDevice.mapMemory(ModelBuffer.bufferMemory, 0, 1024 * sizeof(glm::mat4));
+		m_ModelBufferWriteLocation = logicalDevice.mapMemory(m_ModelBuffer.m_BufferMemory, 0, 1024 * sizeof(glm::mat4));
 
-		ModelTransforms.reserve(1024);
+		m_ModelTransforms.reserve(1024);
 		for (int i = 0; i < 1024; ++i) {
-			ModelTransforms.push_back(glm::mat4(1.0f));
+			m_ModelTransforms.push_back(glm::mat4(1.0f));
 		}
 
-		UniformBufferDescriptor.buffer = CameraDataBuffer.buffer;
-		UniformBufferDescriptor.offset = 0;
-		UniformBufferDescriptor.range = sizeof(UniformBufferObject);
+		m_UniformBufferDescriptor.buffer = m_CameraDataBuffer.m_Buffer;
+		m_UniformBufferDescriptor.offset = 0;
+		m_UniformBufferDescriptor.range = sizeof(UniformBufferObject);
 	
-		ModelBufferDescriptor.buffer = ModelBuffer.buffer;
-		ModelBufferDescriptor.offset = 0;
-		ModelBufferDescriptor.range = 1024 * sizeof(glm::mat4);
+		m_ModelBufferDescriptor.buffer = m_ModelBuffer.m_Buffer;
+		m_ModelBufferDescriptor.offset = 0;
+		m_ModelBufferDescriptor.range = 1024 * sizeof(glm::mat4);
 
 	}
 }

@@ -1,7 +1,7 @@
 #include "vopch.h"
-#include "Scene.h"
+#include "Core/Scene.h"
 
-namespace Game {
+namespace VoxelEngine {
 
 	Scene::Scene() {
 		for (float y = -1.0f; y < 1.0f; y += 0.2f) {

@@ -9,20 +9,20 @@ namespace vkInit {
 
 		for (int i = 0; i < frames.size(); ++i) {
 			std::vector<vk::ImageView> attachments = {
-				frames[i].ImageView
+				frames[i].m_ImageView
 			};
 
 			vk::FramebufferCreateInfo framebufferinfo = {};
 			framebufferinfo.flags = vk::FramebufferCreateFlags();
-			framebufferinfo.renderPass = inputChunk.renderPass;
+			framebufferinfo.renderPass = inputChunk.RenderPass;
 			framebufferinfo.attachmentCount = attachments.size();
 			framebufferinfo.pAttachments = attachments.data();
-			framebufferinfo.width = inputChunk.swapchainExtent.width;
-			framebufferinfo.height = inputChunk.swapchainExtent.height;
+			framebufferinfo.width = inputChunk.SwapchainExtent.width;
+			framebufferinfo.height = inputChunk.SwapchainExtent.height;
 			framebufferinfo.layers = 1;
 
 			try {
-				frames[i].FrameBuffer = inputChunk.device.createFramebuffer(framebufferinfo);
+				frames[i].m_FrameBuffer = inputChunk.Device.createFramebuffer(framebufferinfo);
 
 #ifdef VO_DEBUG
 				VO_CORE_TRACE("Created framebuffer for frame {0}", i);

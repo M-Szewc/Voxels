@@ -57,15 +57,18 @@ project "Voxels"
 
 	filter "configurations:Debug"
 		defines "VO_DEBUG"
+		staticruntime "off"
 		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
 		defines "VO_RELEASE"
+		staticruntime "off"
 		runtime "Release"
 		optimize "on"
 
 	filter "configurations:Distribution"
 		defines "VO_DISTRIBUTION"
+		staticruntime "off"
 		runtime "Release"
 		optimize "on"

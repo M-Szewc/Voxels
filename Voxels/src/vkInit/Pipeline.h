@@ -1,15 +1,15 @@
 #pragma once
-#include "Base.h"
+#include "Core/Base.h"
 
 namespace vkInit {
 
 	struct GraphicsPipelineInBundle {
-		vk::Device m_Device;
-		std::string m_VertexFilepath;
-		std::string m_FragmentFilepath;
-		vk::Extent2D m_SwapchainExtent;
-		vk::Format m_SwapchainImageFormat;
-		vk::DescriptorSetLayout m_DescriptorSetLayout;
+		vk::Device Device;
+		std::string VertexFilepath;
+		std::string FragmentFilepath;
+		vk::Extent2D SwapchainExtent;
+		vk::Format SwapchainImageFormat;
+		vk::DescriptorSetLayout DescriptorSetLayout;
 	};
 
 	struct GraphicsPipelineOutBundle {

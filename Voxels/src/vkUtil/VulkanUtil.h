@@ -1,16 +1,16 @@
 #pragma once
-#include "Base.h"
+#include "Core/Base.h"
 
 #include "vkUtil/Memory.h"
 
 namespace vkUtil {
 
 	struct QueueFamilyIndices {
-		std::optional<uint32_t> GraphicsFamily;
-		std::optional<uint32_t> PresentFamily;
+		std::optional<uint32_t> m_GraphicsFamily;
+		std::optional<uint32_t> m_PresentFamily;
 
 		bool IsComplete() {
-			return GraphicsFamily.has_value() && PresentFamily.has_value();
+			return m_GraphicsFamily.has_value() && m_PresentFamily.has_value();
 		}
 	};
 
@@ -27,29 +27,29 @@ namespace vkUtil {
 	struct SwapChainFrame {
 
 		//swapchain
-		vk::Image Image;
-		vk::ImageView ImageView;
-		vk::Framebuffer FrameBuffer;
+		vk::Image m_Image;
+		vk::ImageView m_ImageView;
+		vk::Framebuffer m_FrameBuffer;
 		
-		vk::CommandBuffer CommandBuffer;
+		vk::CommandBuffer m_CommandBuffer;
 		
 		//synchronization
-		vk::Semaphore ImageAveilable, RenderFinished;
-		vk::Fence InFlightFence;
+		vk::Semaphore m_ImageAveilable, m_RenderFinished;
+		vk::Fence m_InFlightFence;
 		
 		//resources
-		UniformBufferObject CameraData;
-		Buffer CameraDataBuffer;
-		void* CameraDataWriteLocation;
+		UniformBufferObject m_CameraData;
+		Buffer m_CameraDataBuffer;
+		void* m_CameraDataWriteLocation;
 
-		std::vector<glm::mat4> ModelTransforms;
-		Buffer ModelBuffer;
-		void* ModelBufferWriteLocation;
+		std::vector<glm::mat4> m_ModelTransforms;
+		Buffer m_ModelBuffer;
+		void* m_ModelBufferWriteLocation;
 
 		//resource descriptors
-		vk::DescriptorBufferInfo UniformBufferDescriptor;
-		vk::DescriptorBufferInfo ModelBufferDescriptor;
-		vk::DescriptorSet DescriptorSet;
+		vk::DescriptorBufferInfo m_UniformBufferDescriptor;
+		vk::DescriptorBufferInfo m_ModelBufferDescriptor;
+		vk::DescriptorSet m_DescriptorSet;
 
 		void CreateDescriptorResources(vk::Device logicalDevice, vk::PhysicalDevice physicalDevice);
 
@@ -57,23 +57,23 @@ namespace vkUtil {
 			
 			vk::WriteDescriptorSet writeInfo;
 
-			writeInfo.dstSet = DescriptorSet;
+			writeInfo.dstSet = m_DescriptorSet;
 			writeInfo.dstBinding = 0;
 			writeInfo.dstArrayElement = 0;
 			writeInfo.descriptorCount = 1;
 			writeInfo.descriptorType = vk::DescriptorType::eUniformBuffer;
-			writeInfo.pBufferInfo = &UniformBufferDescriptor;
+			writeInfo.pBufferInfo = &m_UniformBufferDescriptor;
 
 			device.updateDescriptorSets(writeInfo, nullptr);
 			
 			vk::WriteDescriptorSet writeInfo2;
 
-			writeInfo2.dstSet = DescriptorSet;
+			writeInfo2.dstSet = m_DescriptorSet;
 			writeInfo2.dstBinding = 1;
 			writeInfo2.dstArrayElement = 0;
 			writeInfo2.descriptorCount = 1;
 			writeInfo2.descriptorType = vk::DescriptorType::eStorageBuffer;
-			writeInfo2.pBufferInfo = &ModelBufferDescriptor;
+			writeInfo2.pBufferInfo = &m_ModelBufferDescriptor;
 
 			device.updateDescriptorSets(writeInfo2, nullptr);
 

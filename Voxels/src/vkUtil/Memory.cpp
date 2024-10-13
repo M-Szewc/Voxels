@@ -7,13 +7,13 @@ namespace vkUtil {
 
 		vk::BufferCreateInfo bufferInfo;
 		bufferInfo.flags = vk::BufferCreateFlags();
-		bufferInfo.size = input.size;
-		bufferInfo.usage = input.usage;
+		bufferInfo.size = input.Size;
+		bufferInfo.usage = input.Usage;
 		// No concurent queues
 		bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
 		Buffer buffer;
-		buffer.buffer = input.logicalDevice.createBuffer(bufferInfo);
+		buffer.m_Buffer = input.LogicalDevice.createBuffer(bufferInfo);
 
 		AllocateBufferMemory(buffer, input);
 
@@ -38,18 +38,18 @@ namespace vkUtil {
 
 	void AllocateBufferMemory(Buffer& buffer, const BufferInput& input) {
 
-		vk::MemoryRequirements memoryRequirements = input.logicalDevice.getBufferMemoryRequirements(buffer.buffer);
+		vk::MemoryRequirements memoryRequirements = input.LogicalDevice.getBufferMemoryRequirements(buffer.m_Buffer);
 
 		vk::MemoryAllocateInfo allocInfo;
 		allocInfo.allocationSize = memoryRequirements.size;
 		allocInfo.memoryTypeIndex = FindMemoryTypeIndex(
-			input.physicalDevice, memoryRequirements.memoryTypeBits,
-			input.memoryProperties
+			input.PhysicalDevice, memoryRequirements.memoryTypeBits,
+			input.MemoryProperties
 		);
 
-		buffer.bufferMemory = input.logicalDevice.allocateMemory(allocInfo);
+		buffer.m_BufferMemory = input.LogicalDevice.allocateMemory(allocInfo);
 		//hardcoded memory offset
-		input.logicalDevice.bindBufferMemory(buffer.buffer, buffer.bufferMemory, 0);
+		input.LogicalDevice.bindBufferMemory(buffer.m_Buffer, buffer.m_BufferMemory, 0);
 	}
 
 	void CopyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, vk::DeviceSize size, vk::Queue queue, vk::CommandBuffer commandBuffer)
@@ -64,7 +64,7 @@ namespace vkUtil {
 		copyRegion.srcOffset = 0;
 		copyRegion.dstOffset = 0;
 		copyRegion.size = size;
-		commandBuffer.copyBuffer(srcBuffer.buffer, dstBuffer.buffer, 1, &copyRegion);
+		commandBuffer.copyBuffer(srcBuffer.m_Buffer, dstBuffer.m_Buffer, 1, &copyRegion);
 
 		commandBuffer.end();
 

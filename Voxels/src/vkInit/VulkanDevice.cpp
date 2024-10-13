@@ -99,9 +99,9 @@ namespace vkInit {
 		vkUtil::QueueFamilyIndices indices = vkUtil::FindQueueFamilies(physicalDevice, surface);
 
 		std::vector<uint32_t> uniqueIndices;
-		uniqueIndices.push_back(indices.GraphicsFamily.value());
-		if (indices.GraphicsFamily.value() != indices.PresentFamily.value()) {
-			uniqueIndices.push_back(indices.PresentFamily.value());
+		uniqueIndices.push_back(indices.m_GraphicsFamily.value());
+		if (indices.m_GraphicsFamily.value() != indices.m_PresentFamily.value()) {
+			uniqueIndices.push_back(indices.m_PresentFamily.value());
 		}
 
 		float queuePriority = 1.0f;
@@ -111,7 +111,7 @@ namespace vkInit {
 		for (uint32_t queueFamilyIndex : uniqueIndices) {
 			queueCreateInfo.push_back(vk::DeviceQueueCreateInfo(
 				vk::DeviceQueueCreateFlags(),
-				indices.GraphicsFamily.value(),
+				indices.m_GraphicsFamily.value(),
 				1, &queuePriority
 			));
 		}
@@ -158,8 +158,8 @@ namespace vkInit {
 		vkUtil::QueueFamilyIndices indices = vkUtil::FindQueueFamilies(physicalDevice, surface);
 
 		return { {
-				device.getQueue(indices.GraphicsFamily.value(), 0),
-				device.getQueue(indices.PresentFamily.value(), 0)
+				device.getQueue(indices.m_GraphicsFamily.value(), 0),
+				device.getQueue(indices.m_PresentFamily.value(), 0)
 			} };
 	}
 }

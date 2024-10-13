@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Base.h"
-#include "Scene.h"
+#include "Core/Base.h"
+#include "Core/Scene.h"
 #include "vkUtil/VertexManager.h"
 
 #include "vkUtil/VulkanUtil.h"
 
-namespace Game {
+namespace VoxelEngine {
 
 	class Engine
 	{

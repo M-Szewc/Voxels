@@ -144,10 +144,10 @@ namespace vkInit {
 		);
 
 		vkUtil::QueueFamilyIndices indices = vkUtil::FindQueueFamilies(physicalDevice, surface);
-		uint32_t queueFamilyIndices[] = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
+		uint32_t queueFamilyIndices[] = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
 
 		// if there are 2 seperate queue family indices
-		if (indices.GraphicsFamily.value() != indices.PresentFamily.value()) {
+		if (indices.m_GraphicsFamily.value() != indices.m_PresentFamily.value()) {
 			createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
 			createInfo.queueFamilyIndexCount = 2;
 			createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -190,8 +190,8 @@ namespace vkInit {
 			createInfo.subresourceRange.layerCount = 1;
 			createInfo.format = format.format;
 
-			bundle.Frames[i].Image = images[i];
-			bundle.Frames[i].ImageView = logicalDevice.createImageView(createInfo);
+			bundle.Frames[i].m_Image = images[i];
+			bundle.Frames[i].m_ImageView = logicalDevice.createImageView(createInfo);
 		}
 
 		bundle.Format = format.format;

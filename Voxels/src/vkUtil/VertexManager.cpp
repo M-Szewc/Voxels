@@ -10,8 +10,8 @@ namespace vkUtil {
 
 	VertexManager::~VertexManager()
 	{
-		m_LogicalDevice.destroyBuffer(m_VertexBuffer.buffer);
-		m_LogicalDevice.freeMemory(m_VertexBuffer.bufferMemory);
+		m_LogicalDevice.destroyBuffer(m_VertexBuffer.m_Buffer);
+		m_LogicalDevice.freeMemory(m_VertexBuffer.m_BufferMemory);
 	}
 
 	void VertexManager::Consume(MeshType type, const std::vector<float>& vertexData)
@@ -29,31 +29,31 @@ namespace vkUtil {
 
 	void VertexManager::Finalize(FinalizationChunk finalizationChunk)
 	{
-		this->m_LogicalDevice = finalizationChunk.logicalDevice;
+		this->m_LogicalDevice = finalizationChunk.LogicalDevice;
 
 		BufferInput inputChunk;
-		inputChunk.logicalDevice = finalizationChunk.logicalDevice;
-		inputChunk.physicalDevice = finalizationChunk.physicalDevice;
-		inputChunk.size = sizeof(float) * m_Lump.size();
-		inputChunk.usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
-		inputChunk.memoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+		inputChunk.LogicalDevice = finalizationChunk.LogicalDevice;
+		inputChunk.PhysicalDevice = finalizationChunk.PhysicalDevice;
+		inputChunk.Size = sizeof(float) * m_Lump.size();
+		inputChunk.Usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
+		inputChunk.MemoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 
 		Buffer stagingBuffer = vkUtil::CreateBuffer(inputChunk);
 
-		void* memoryLocation = m_LogicalDevice.mapMemory(stagingBuffer.bufferMemory, 0, inputChunk.size);
-		memcpy(memoryLocation, m_Lump.data(), inputChunk.size);
-		m_LogicalDevice.unmapMemory(stagingBuffer.bufferMemory);
+		void* memoryLocation = m_LogicalDevice.mapMemory(stagingBuffer.m_BufferMemory, 0, inputChunk.Size);
+		memcpy(memoryLocation, m_Lump.data(), inputChunk.Size);
+		m_LogicalDevice.unmapMemory(stagingBuffer.m_BufferMemory);
 	
-		inputChunk.usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
-		inputChunk.memoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal;
+		inputChunk.Usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
+		inputChunk.MemoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 
 		m_VertexBuffer = CreateBuffer(inputChunk);
 
-		CopyBuffer(stagingBuffer, m_VertexBuffer, inputChunk.size,
-			finalizationChunk.queue, finalizationChunk.commandBuffer
+		CopyBuffer(stagingBuffer, m_VertexBuffer, inputChunk.Size,
+			finalizationChunk.Queue, finalizationChunk.CommandBuffer
 		);
 
-		m_LogicalDevice.destroyBuffer(stagingBuffer.buffer);
-		m_LogicalDevice.freeMemory(stagingBuffer.bufferMemory);
+		m_LogicalDevice.destroyBuffer(stagingBuffer.m_Buffer);
+		m_LogicalDevice.freeMemory(stagingBuffer.m_BufferMemory);
 	}
 }

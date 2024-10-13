@@ -1,14 +1,14 @@
 #pragma once
-#include "Base.h"
+#include "Core/Base.h"
 #include "vkMesh/MeshTypes.h"
 #include "vkUtil/Memory.h"
 
 namespace vkUtil {
 	struct FinalizationChunk {
-		vk::Device logicalDevice;
-		vk::PhysicalDevice physicalDevice;
-		vk::Queue queue;
-		vk::CommandBuffer commandBuffer;
+		vk::Device LogicalDevice;
+		vk::PhysicalDevice PhysicalDevice;
+		vk::Queue Queue;
+		vk::CommandBuffer CommandBuffer;
 	};
 
 	class VertexManager {
