@@ -15,4 +15,4 @@ bin-int/
 Sandbox/shaders/
 
 # Compiled shaders
-# **.spv
+**.spv
